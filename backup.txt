@@ -1,0 +1,107 @@
+import pygame
+import sys
+import random
+
+# Инициализация Pygame
+pygame.init()
+
+# Настройка экрана
+screen_width = 800
+screen_height = 600
+screen = pygame.display.set_mode((screen_width, screen_height))
+pygame.display.set_caption('Моя игра')
+
+# Параметры игрока
+player_width = 50
+player_height = 60
+player_x = screen_width // 2 - player_width // 2
+player_y = screen_height - player_height - 10
+player_speed = 2
+
+# Параметры врага
+enemy_width = 50
+enemy_height = 50
+enemy_x = random.randint(0, screen_width - enemy_width)
+enemy_y = 0 - enemy_height
+enemy_speed = 1
+
+# Класс для частиц
+class Particle:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.size = random.randint(2, 5)  # Размер частицы
+        self.color = (255, 0, 0)  # Цвет частицы (красный)
+        self.speed_x = random.uniform(-2, 2)  # Случайное движение по оси x
+        self.speed_y = random.uniform(-2, 2)  # Случайное движение по оси y
+
+    def move(self):
+        self.x += self.speed_x
+        self.y += self.speed_y
+        self.size -= 0.1  # Уменьшение размера со временем
+
+    def draw(self, surface):
+        if self.size > 0:
+            pygame.draw.circle(surface, self.color, (int(self.x), int(self.y)), int(self.size))
+
+# Список для частиц
+particles = []
+
+# Инициализация переменной running
+running = True
+player_alive = True
+
+# Основной игровой цикл
+while running:
+    # Обработка событий
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    if player_alive:
+        # Управление игроком
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT] and player_x > 0:
+            player_x -= player_speed
+        if keys[pygame.K_RIGHT] and player_x < screen_width - player_width:
+            player_x += player_speed
+
+        # Движение врага
+        enemy_y += enemy_speed
+        if enemy_y > screen_height:
+            enemy_y = 0 - enemy_height  # Сбрасываем врага наверх
+            enemy_x = random.randint(0, screen_width - enemy_width)  # Случайная позиция по горизонтали
+
+        # Проверка на столкновение
+        if (player_x < enemy_x + enemy_width and
+            player_x + player_width > enemy_x and
+            player_y < enemy_y + enemy_height and
+            player_y + player_height > enemy_y):
+            print("Игрок столкнулся с врагом!")
+            player_alive = False
+            # Создаем частицы в месте игрока
+            for _ in range(50):  # Количество частиц
+                particles.append(Particle(player_x + player_width // 2, player_y + player_height // 2))
+
+    # Логика частиц
+    for particle in particles:
+        particle.move()
+        if particle.size <= 0:
+            particles.remove(particle)
+
+    # Отрисовка
+    screen.fill((0, 0, 0))  # Заливка черным цветом
+
+    if player_alive:
+        pygame.draw.rect(screen, (255, 0, 0), (player_x, player_y, player_width, player_height))  # Игрок
+    else:
+        # Если игрок не жив, рисуем частицы
+        for particle in particles:
+            particle.draw(screen)
+
+    pygame.draw.rect(screen, (0, 0, 255), (enemy_x, enemy_y, enemy_width, enemy_height))  # Враг
+    pygame.display.flip()
+
+# Завершение Pygame
+pygame.quit()
+sys.exit()
