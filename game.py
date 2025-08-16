@@ -18,7 +18,7 @@ class Game:
         pygame.display.set_caption('Турбо гонки')
 
         self.clock = pygame.time.Clock()
-        self.font = pygame.font.SysFont(None, 36)
+        self.font = pygame.font.SysFont(None, 25)
 
         # Game states
         self.game_state = "level_select"

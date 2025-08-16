@@ -7,7 +7,7 @@ pygame.init()
 pygame.mixer.init()
 
 # Настройка экрана
-screen_width = 1300
+screen_width = 1280
 screen_height = 660
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('Моя игра')
