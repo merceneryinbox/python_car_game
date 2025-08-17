@@ -1,5 +1,5 @@
 import pygame
-from config import *
+from constants import *
 from assets_loader import load_image
 
 class Player:
