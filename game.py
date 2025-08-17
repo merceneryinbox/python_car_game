@@ -1,9 +1,12 @@
 import pygame
 import sys
 import random
-import time
-from config import *
-from assets_loader import load_backgrounds, load_sound
+from constants import (
+    SCREEN_WIDTH, SCREEN_HEIGHT, WHITE, GREEN, RED, GOLD, CYAN,
+    BONUS_HEIGHT, ENEMIES_FOR_FIRST_LEVEL, LEVEL_INCREMENT,
+    MAX_ENEMY_SPEED, PLAYER_LIVES, MAX_LEVELS, FPS,
+    BONUS_SPAWN_CHANCE, SHIELD_SPAWN_CHANCE, GUN_SPAWN_CHANCE
+)
 from player import Player
 from enemy import Enemy
 from bonus import Bonus
@@ -28,7 +31,7 @@ class Game:
         self.enemies_to_next_level = ENEMIES_FOR_FIRST_LEVEL
 
         # Load assets
-        self.backgrounds = load_backgrounds()
+        self.backgrounds = self.load_backgrounds()  # Добавлен self.
         self.load_sounds()
         self.load_music()
 
@@ -47,6 +50,29 @@ class Game:
 
     def load_sounds(self):
         """Load all game sounds"""
+
+
+        def load_sound(path, volume=0.5):
+            """
+            Загружает звуковой файл и настраивает громкость
+
+            :param path: Путь к звуковому файлу (форматы: .wav, .ogg)
+            :param volume: Уровень громкости от 0.0 до 1.0
+            :return: Объект Sound или None при ошибке
+            """
+            try:
+                # Инициализация аудиосистемы pygame (если ещё не сделано)
+                if not pygame.mixer.get_init():
+                    pygame.mixer.init()
+
+                sound = pygame.mixer.Sound(path)
+                sound.set_volume(volume)
+                return sound
+
+            except Exception as e:
+                print(f"Ошибка загрузки звука {path}: {e}")
+                return None
+
         self.player_move_sound = load_sound('assets/player_move.wav', 0.4)
         self.enemy_move_sound = load_sound('assets/enemy_move.wav', 0.0)
         self.slide_sound = load_sound('assets/slide.wav', 0.5)
@@ -92,15 +118,13 @@ class Game:
                 100, 50
             )
             self.level_rects.append(level_rect)
-            color = GREEN if level_index + 1 == self.current_level else (white if level_index + 1 <=self.max_unocked_level else (100, 100, 100))
+            color = GREEN if level_index + 1 == self.current_level else (
+                WHITE if level_index + 1 <= self.max_unlocked_level else (100, 100, 100))
             pygame.draw.rect(self.screen, color, level_rect)
             self.screen.blit(level_text, (level_rect.x + 10, level_rect.y + 10))
 
     def start_level(self, level):
         """Initialize level with given number"""
-        if level > self.max_unlocked_level:
-            return
-
         self.game_state = "playing"
         self.player.lives = PLAYER_LIVES
         self.enemies_defeated = 0
@@ -123,15 +147,14 @@ class Game:
         self.gun_bonus.y = -BONUS_HEIGHT
 
     def handle_events(self):
-        """Handle pygame events""
+        """Handle pygame events"""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return False
             elif event.type == pygame.MOUSEBUTTONDOWN and self.game_state == "level_select":
                 mouse_pos = pygame.mouse.get_pos()
-                for i, level_rect in enumerate(self.level_rects):
-                
-                    if rect.collidepoint(mouse_pos) and (i + 1) <= self.max_unlocked_level:
+                for i, rect in enumerate(self.level_rects):
+                    if rect.collidepoint(mouse_pos):
                         self.start_level(i + 1)
         return True
 
@@ -165,7 +188,6 @@ class Game:
             if not self.player.gun_active:
                 self.enemies_defeated += 1
             if self.enemies_defeated >= self.enemies_to_next_level:
-                self.max_unlocked_level = max(self.max_unocked_level, self.current_level + 1)
                 self.game_state = "level_select"
                 pygame.mixer.music.stop()
                 self.play_menu_music()

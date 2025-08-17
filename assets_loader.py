@@ -1,5 +1,5 @@
 import pygame
-from config import *
+from constants import *
 
 def load_image(path, size, default_color, default_surface=True):
     """Load an image with fallback to default surface if file not found"""

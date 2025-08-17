@@ -1,7 +1,7 @@
 import random
 import pygame
 from assets_loader import load_image
-from config import *
+from constants import *
 
 class Enemy:
     def __init__(self):
