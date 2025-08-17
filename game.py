@@ -23,6 +23,7 @@ class Game:
         # Game states
         self.game_state = "level_select"
         self.current_level = 1
+        self.max_unlocked_level = 1
         self.enemies_defeated = 0
         self.enemies_to_next_level = ENEMIES_FOR_FIRST_LEVEL
 
@@ -91,12 +92,15 @@ class Game:
                 100, 50
             )
             self.level_rects.append(level_rect)
-            color = GREEN if level_index + 1 == self.current_level else (100, 100, 100)
+            color = GREEN if level_index + 1 == self.current_level else (white if level_index + 1 <=self.max_unocked_level else (100, 100, 100))
             pygame.draw.rect(self.screen, color, level_rect)
             self.screen.blit(level_text, (level_rect.x + 10, level_rect.y + 10))
 
     def start_level(self, level):
         """Initialize level with given number"""
+        if level > self.max_unlocked_level:
+            return
+
         self.game_state = "playing"
         self.player.lives = PLAYER_LIVES
         self.enemies_defeated = 0
@@ -119,14 +123,15 @@ class Game:
         self.gun_bonus.y = -BONUS_HEIGHT
 
     def handle_events(self):
-        """Handle pygame events"""
+        """Handle pygame events""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return False
             elif event.type == pygame.MOUSEBUTTONDOWN and self.game_state == "level_select":
                 mouse_pos = pygame.mouse.get_pos()
-                for i, rect in enumerate(self.level_rects):
-                    if rect.collidepoint(mouse_pos):
+                for i, level_rect in enumerate(self.level_rects):
+                
+                    if rect.collidepoint(mouse_pos) and (i + 1) <= self.max_unlocked_level:
                         self.start_level(i + 1)
         return True
 
@@ -160,6 +165,7 @@ class Game:
             if not self.player.gun_active:
                 self.enemies_defeated += 1
             if self.enemies_defeated >= self.enemies_to_next_level:
+                self.max_unlocked_level = max(self.max_unocked_level, self.current_level + 1)
                 self.game_state = "level_select"
                 pygame.mixer.music.stop()
                 self.play_menu_music()
