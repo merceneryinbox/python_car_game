@@ -28,11 +28,11 @@ for i in range(1, 8):  # Предполагается, что у вас есть
 
 # Список треков для фоновой музыки
 playlist = [
-    'assets/background_music1.mp3',
-    'assets/background_music2.mp3',
-    'assets/background_music3.mp3'
+    'assets/sounds/background_music1.mp3',
+    'assets/sounds/background_music2.mp3',
+    'assets/sounds/background_music3.mp3'
 ]
-menu_music = 'assets/menu_music.mp3'
+menu_music = 'assets/sounds/menu_music.mp3'
 
 # Функция для воспроизведения трека уровня
 def play_track_for_level(level):
@@ -52,7 +52,7 @@ pygame.mixer.music.set_endevent(pygame.USEREVENT + 1)
 
 # Загрузка изображений игрока, врага и бонусов
 try:
-    player_image = pygame.image.load('assets/car_player.png')
+    player_image = pygame.image.load('assets/images/car_player.PNG')
     player_image = pygame.transform.scale(player_image, (50, 60))
 except FileNotFoundError:
     player_image = pygame.Surface((50, 60))

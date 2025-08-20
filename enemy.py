@@ -14,9 +14,9 @@ class Enemy:
 
     def load_image(self):
         """Load enemy image with fallback"""
-        self.image = load_image('assets/car_enemy.png',
-                              (self.width, self.height),
-                              RED)
+        self.image = load_image('assets/images/car_enemy.PNG',
+                                (self.width, self.height),
+                                RED)
 
     def move(self):
         """Move enemy down the screen"""

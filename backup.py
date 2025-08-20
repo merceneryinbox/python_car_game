@@ -14,11 +14,11 @@ pygame.display.set_caption('Моя игра')
 
 # Список треков для фоновой музыки
 playlist = [
-    'assets/background_music1.mp3',
-    'assets/background_music2.mp3',
-    'assets/background_music3.mp3'
+    'assets/sounds/background_music1.mp3',
+    'assets/sounds/background_music2.mp3',
+    'assets/sounds/background_music3.mp3'
 ]
-menu_music = 'assets/menu_music.mp3'  # Музыка для меню
+menu_music = 'assets/sounds/menu_music.mp3'  # Музыка для меню
 
 # Функция для воспроизведения трека уровня
 def play_track_for_level(level):
@@ -37,14 +37,14 @@ def play_menu_music():
 pygame.mixer.music.set_endevent(pygame.USEREVENT + 1)
 
 # Загрузка изображений
-car_image = pygame.image.load('assets/car.PNG')
+car_image = pygame.image.load('assets/images/car.PNG')
 player_image = pygame.transform.scale(car_image, (50, 60))
 enemy_image = pygame.transform.scale(car_image, (50, 60))
 
 # Загрузка звуков
-player_move_sound = pygame.mixer.Sound('assets/player_move.wav')
-enemy_move_sound = pygame.mixer.Sound('assets/enemy_move.wav')
-slide_sound = pygame.mixer.Sound('assets/slide.wav')
+player_move_sound = pygame.mixer.Sound('assets/sounds/player_move.wav')
+enemy_move_sound = pygame.mixer.Sound('assets/sounds/enemy_move.wav')
+slide_sound = pygame.mixer.Sound('assets/sounds/slide.wav')
 
 # Настройка громкости
 player_move_sound.set_volume(0.3)

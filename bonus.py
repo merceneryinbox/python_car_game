@@ -1,6 +1,7 @@
 import pygame
 import random
-from constants import SCREEN_WIDTH, BONUS_WIDTH, BONUS_HEIGHT
+import os
+from constants import SCREEN_WIDTH, SCREEN_HEIGHT, BONUS_WIDTH, BONUS_HEIGHT
 
 
 class Bonus:
@@ -10,30 +11,52 @@ class Bonus:
         self.height = BONUS_HEIGHT
         self.x = random.randint(0, SCREEN_WIDTH - self.width)
         self.y = -self.height
-        self.speed = 2
+        self.speed = 3
         self.image = None
+        self.color = self.get_color()
         self.load_image()
+
+    def get_color(self):
+        """Возвращает цвет для бонуса (резервный вариант)"""
+        if self.type == "regular":
+            return (255, 255, 0)  # Желтый
+        elif self.type == "shield":
+            return (0, 0, 255)  # Синий
+        elif self.type == "gun":
+            return (255, 0, 0)  # Красный
+        return (255, 255, 255)  # Белый по умолчанию
 
     def load_image(self):
         """Загружает изображение для бонуса"""
         try:
+            # Получаем абсолютный путь к файлу
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+
             if self.type == "regular":
-                self.image = pygame.image.load('assets/images/regular_bonus.png')
+                image_path = os.path.join(base_dir, 'assets', 'images', 'regular_bonus.png')
             elif self.type == "shield":
-                self.image = pygame.image.load('assets/images/shield_bonus.png')
+                image_path = os.path.join(base_dir, 'assets', 'images', 'shield_bonus.png')
             elif self.type == "gun":
-                self.image = pygame.image.load('assets/images/gun_bonus.png')
+                image_path = os.path.join(base_dir, 'assets', 'images', 'gun_bonus.png')
+            else:
+                print("Папка assets/images не существует!")
+                return
+
+            # Проверяем существование файла
+            if not os.path.exists(image_path):
+                print(f"Файл не найден: {image_path}")
+                return
+
+            # Загружаем изображение
+            self.image = pygame.image.load(image_path).convert_alpha()
+            print(f"Image loaded successfully: {image_path}")
 
             # Масштабируем изображение до нужного размера
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
-        except:
-            # Если изображение не загрузилось, создаем цветной прямоугольник
-            if self.type == "regular":
-                self.color = (255, 255, 0)  # Желтый
-            elif self.type == "shield":
-                self.color = (0, 0, 255)  # Синий
-            elif self.type == "gun":
-                self.color = (255, 0, 0)  # Красный
+            print(f"Изображение загружено: {image_path}")
+
+        except Exception as e:
+            print(f"Ошибка загрузки изображения для бонуса {self.type}: {e}")
             self.image = None
 
     def move(self):

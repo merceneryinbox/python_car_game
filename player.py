@@ -13,15 +13,15 @@ class Player:
         self.score = 0
         self.image = None
         self.shield_active = False
-        self.shield_start_time = 0
+        self.shield_start_time = 2
         self.gun_active = False
-        self.gun_start_time = 0
+        self.gun_start_time = 2
 
     def load_image(self):
         """Load player image with fallback"""
-        self.image = load_image('assets/car_player.png',
-                              (self.width, self.height),
-                              GREEN)
+        self.image = load_image('assets/images/car_player.PNG',
+                                (self.width, self.height),
+                                GREEN)
 
     def move(self, direction):
         """Move player left or right"""

@@ -31,7 +31,7 @@ def load_backgrounds():
     backgrounds = []
     for i in range(1, MAX_LEVELS + 1):
         try:
-            bg_image = pygame.image.load(f'assets/desert_background_level_{i}.png')
+            bg_image = pygame.image.load(f'assets/images/desert_background_level_{i}.png')
             bg_image = pygame.transform.scale(bg_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
             backgrounds.append(bg_image)
         except FileNotFoundError:

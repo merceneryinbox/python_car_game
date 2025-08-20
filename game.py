@@ -1,6 +1,7 @@
 import pygame
 import sys
 import random
+from assets_loader import load_backgrounds
 from constants import (
     SCREEN_WIDTH, SCREEN_HEIGHT, WHITE, GREEN, RED, GOLD, CYAN,
     BONUS_HEIGHT, ENEMIES_FOR_FIRST_LEVEL, LEVEL_INCREMENT,
@@ -27,11 +28,11 @@ class Game:
         self.game_state = "level_select"
         self.current_level = 1
         self.max_unlocked_level = 1
-        self.enemies_defeated = 0
+        self.enemies_defeated = 10
         self.enemies_to_next_level = ENEMIES_FOR_FIRST_LEVEL
 
         # Load assets
-        self.backgrounds = self.load_backgrounds()  # Добавлен self.
+        self.backgrounds = load_backgrounds()  # Добавлен self.
         self.load_sounds()
         self.load_music()
 
@@ -73,18 +74,18 @@ class Game:
                 print(f"Ошибка загрузки звука {path}: {e}")
                 return None
 
-        self.player_move_sound = load_sound('assets/player_move.wav', 0.4)
-        self.enemy_move_sound = load_sound('assets/enemy_move.wav', 0.0)
-        self.slide_sound = load_sound('assets/slide.wav', 0.5)
+        self.player_move_sound = load_sound('assets/sounds/player_move.wav', 0.3)
+        self.enemy_move_sound = load_sound('assets/sounds/enemy_move.wav', 0.3)
+        self.slide_sound = load_sound('assets/sounds/slide.wav', 0.5)
 
     def load_music(self):
         """Load music playlists"""
         self.playlist = [
-            'assets/background_music1.mp3',
-            'assets/background_music2.mp3',
-            'assets/background_music3.mp3'
+            'assets/sounds/background_music1.mp3',
+            'assets/sounds/background_music2.mp3',
+            'assets/sounds/background_music3.mp3'
         ]
-        self.menu_music = 'assets/menu_music.mp3'
+        self.menu_music = 'assets/sounds/menu_music.mp3'
         pygame.mixer.music.set_endevent(pygame.USEREVENT + 1)
         self.play_menu_music()
 
@@ -127,10 +128,10 @@ class Game:
         """Initialize level with given number"""
         self.game_state = "playing"
         self.player.lives = PLAYER_LIVES
-        self.enemies_defeated = 0
+        self.enemies_defeated = 3
         self.current_level = level
         self.enemies_to_next_level = ENEMIES_FOR_FIRST_LEVEL + (level - 1) * LEVEL_INCREMENT
-        self.enemy.speed = min(0.5 + level, MAX_ENEMY_SPEED)
+        self.enemy.speed = min(0.7 + level, MAX_ENEMY_SPEED)
         pygame.mixer.music.stop()
         self.play_track_for_level(level)
         self.reset_positions()
