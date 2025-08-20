@@ -1,54 +1,65 @@
-import random
 import pygame
-from assets_loader import load_image
-from constants import *
+import random
+from constants import SCREEN_WIDTH, BONUS_WIDTH, BONUS_HEIGHT
+
 
 class Bonus:
-    def __init__(self, bonus_type="regular"):
+    def __init__(self, bonus_type):
+        self.type = bonus_type
         self.width = BONUS_WIDTH
         self.height = BONUS_HEIGHT
         self.x = random.randint(0, SCREEN_WIDTH - self.width)
-        self.y = 0 - self.height
-        self.speed = BONUS_SPEED
-        self.type = bonus_type
+        self.y = -self.height
+        self.speed = 2
         self.image = None
         self.load_image()
 
     def load_image(self):
-        """Load appropriate image based on bonus type"""
-        if self.type == "shield":
-            self.image = load_image('assets/shield.png',
-                                  (self.width, self.height),
-                                  CYAN)
-        elif self.type == "gun":
-            self.image = load_image('assets/gun.png',
-                                  (self.width, self.height),
-                                  RED)
-        else:  # regular bonus
-            self.image = load_image('assets/bonus.png',
-                                  (self.width, self.height),
-                                  GOLD)
+        """Загружает изображение для бонуса"""
+        try:
+            if self.type == "regular":
+                self.image = pygame.image.load('assets/images/regular_bonus.png')
+            elif self.type == "shield":
+                self.image = pygame.image.load('assets/images/shield_bonus.png')
+            elif self.type == "gun":
+                self.image = pygame.image.load('assets/images/gun_bonus.png')
+
+            # Масштабируем изображение до нужного размера
+            self.image = pygame.transform.scale(self.image, (self.width, self.height))
+        except:
+            # Если изображение не загрузилось, создаем цветной прямоугольник
+            if self.type == "regular":
+                self.color = (255, 255, 0)  # Желтый
+            elif self.type == "shield":
+                self.color = (0, 0, 255)  # Синий
+            elif self.type == "gun":
+                self.color = (255, 0, 0)  # Красный
+            self.image = None
 
     def move(self):
-        """Move bonus down the screen"""
+        """Двигает бонус вниз"""
         self.y += self.speed
 
     def reset(self):
-        """Reset bonus position"""
+        """Сбрасывает позицию бонуса"""
         self.x = random.randint(0, SCREEN_WIDTH - self.width)
-        self.y = 0 - self.height
+        self.y = -self.height
 
     def is_off_screen(self):
-        """Check if bonus is off screen"""
+        """Проверяет, ушел ли бонус за экран"""
         return self.y > SCREEN_HEIGHT
 
     def collides_with(self, player):
-        """Check collision with player"""
-        return (player.x < self.x + self.width and
-                player.x + player.width > self.x and
-                player.y < self.y + self.height and
-                player.y + player.height > self.y)
+        """Проверяет столкновение с игроком"""
+        return (self.x < player.x + player.width and
+                self.x + self.width > player.x and
+                self.y < player.y + player.height and
+                self.y + self.height > player.y)
 
     def draw(self, screen):
-        """Draw bonus on screen"""
-        screen.blit(self.image, (self.x, self.y))
+        """Рисует бонус на экране"""
+        if self.image:
+            screen.blit(self.image, (self.x, self.y))
+        else:
+            # Резервный вариант - цветной прямоугольник
+            pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height))
