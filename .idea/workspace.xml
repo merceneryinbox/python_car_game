@@ -4,9 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0ef8d840-4cab-4ea5-83d9-283d1225862d" name="Changes" comment="на всякий случай 2">
+    <list default="true" id="0ef8d840-4cab-4ea5-83d9-283d1225862d" name="Changes" comment="на всякий случай 3">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/constants.py" beforeDir="false" afterPath="$PROJECT_DIR$/constants.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/game.py" beforeDir="false" afterPath="$PROJECT_DIR$/game.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -165,7 +164,15 @@
       <option name="project" value="LOCAL" />
       <updated>1755717963268</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="на всякий случай 3">
+      <option name="closed" value="true" />
+      <created>1755879235755</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1755879235755</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -213,6 +220,7 @@
     <MESSAGE value="опробовал добавить картинки к бонусам" />
     <MESSAGE value="добавил картинки к бонусам,изменил скорость бонусов враго игрока, оменя шас появления бонусов" />
     <MESSAGE value="на всякий случай 2" />
-    <option name="LAST_COMMIT_MESSAGE" value="на всякий случай 2" />
+    <MESSAGE value="на всякий случай 3" />
+    <option name="LAST_COMMIT_MESSAGE" value="на всякий случай 3" />
   </component>
 </project>

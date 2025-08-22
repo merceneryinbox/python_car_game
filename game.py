@@ -332,7 +332,14 @@ class Game:
 
     def play_menu_music(self):
         """Play menu music"""
-        try:
+        try:            def draw_level_menu(self):
+                """Draw level selection menu with level previews"""
+                print("Отрисовка меню выбора уровней")
+
+                # Используем фон первого уровня для меню
+                if self.backgrounds:
+                    self.screen.blit(self.backgrounds[0], (0, 0))
+                    print("Фон м
             if self.menu_music and os.path.exists(self.menu_music):
                 pygame.mixer.music.load(self.menu_music)
                 pygame.mixer.music.set_volume(0.6)
@@ -345,67 +352,66 @@ class Game:
         except Exception as e:
             print(f"Ошибка загрузки меню музыки: {e}")
 
-    def draw_level_menu(self):
-        """Упрощенное меню выбора уровней"""
-        self.screen.fill((0, 0, 0))
+            еню загружен")
+                else:
+                    self.screen.fill((0, 0, 0))
+                    print("Используется черный фон")
 
-        title_text = self.font.render("ВЫБЕРИТЕ УРОВЕНЬ (1-9):", True, WHITE)
-        self.screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 50))
+                # Затемняем фон для лучшей читаемости
+                overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+                overlay.fill((0, 0, 0, 128))
+                self.screen.blit(overlay, (0, 0))
 
-        """Draw level selection menu with level previews"""
-        # Используем фон первого уровня для меню
-        if self.backgrounds:
-            self.screen.blit(self.backgrounds[0], (0, 0))
-        else:
-            self.screen.fill((0, 0, 0))
+                title_text = self.font.render("Выберите уровень:", True, WHITE)
+                self.screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 30))
 
-        # Затемняем фон для лучшей читаемости
-        overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
-        overlay.fill((0, 0, 0, 128))
-        self.screen.blit(overlay, (0, 0))
+                self.level_rects = []
+                for level_index in range(MAX_LEVELS):
+                    row = level_index // 5
+                    col = level_index % 5
 
-        title_text = self.font.render("Выберите уровень:", True, WHITE)
-        self.screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 30))
+                    # Кнопка уровня
+                    level_rect = pygame.Rect(
+                        SCREEN_WIDTH // 2 - 250 + col * 120,
+                        130 + row * 100,
+                        100, 30
+                    )
+                    self.level_rects.append(level_rect)
 
-        self.level_rects = []
-        for level_index in range(MAX_LEVELS):
-            row = level_index // 5
-            col = level_index % 5
+                    # Определяем цвет кнопки
+                    is_unlocked = (level_index + 1) <= self.max_unlocked_level
+                    is_current = (level_index + 1) == self.current_level
 
-            # Миниатюра фона уровня
-            preview_rect = pygame.Rect(
-                SCREEN_WIDTH // 2 - 250 + col * 120,
-                70 + row * 100,
-                100, 60
-            )
+                    if is_current:
+                        color = GREEN
+                    elif is_unlocked:
+                        color = WHITE
+                    else:
+                        color = (100, 100, 100)
 
-            # Показываем миниатюру фона
-            if level_index < len(self.backgrounds):
-                preview = pygame.transform.scale(self.backgrounds[level_index], (100, 60))
-                self.screen.blit(preview, preview_rect)
+                    pygame.draw.rect(self.screen, color, level_rect, border_radius=5)
 
-            # Кнопка уровня
-            level_rect = pygame.Rect(
-                SCREEN_WIDTH // 2 - 250 + col * 120,
-                130 + row * 100,
-                100, 30
-            )
-            self.level_rects.append(level_rect)
+                    # Цвет текста
+                    text_color = (0, 0, 0) if color == WHITE or color == GREEN else WHITE
+                    level_text = self.font.render(f"{level_index + 1}", True, text_color)
+                    self.screen.blit(level_text, (level_rect.x + 45, level_rect.y + 8))
 
-            # Определяем цвет кнопки
-            if level_index + 1 == self.current_level:
-                color = GREEN
-            elif level_index + 1 <= self.max_unlocked_level:
-                color = WHITE
-            else:
-                color = (100, 100, 100)
+                    # Показываем замок для заблокированных уровней
+                    if not is_unlocked:
+                        lock_text = self.font.render("🔒", True, WHITE)
+                        self.screen.blit(lock_text, (level_rect.x + 10, level_rect.y + 8))
 
-            pygame.draw.rect(self.screen, color, level_rect, border_radius=5)
+                # Информация о прогресse
+                progress_text = self.font.render(f"Открыто уровней: {self.max_unlocked_level}/{MAX_LEVELS}", True,
+                                                 WHITE)
+                self.screen.blit(progress_text,
+                                 (SCREEN_WIDTH // 2 - progress_text.get_width() // 2, SCREEN_HEIGHT - 80))
 
-            # Цвет текста в зависимости от фона кнопки
-            text_color = (0, 0, 0) if color == WHITE or color == GREEN else WHITE
-            level_text = self.font.render(f"Уровень {level_index + 1}", True, text_color)
-            self.screen.blit(level_text, (level_rect.x + 10, level_rect.y + 8))
+                instruction = self.font.render("Щелкните по номеру уровня или нажмите цифру 1-9", True, WHITE)
+                self.screen.blit(instruction, (SCREEN_WIDTH // 2 - instruction.get_width() // 2, SCREEN_HEIGHT - 50))
+
+                print("Меню отрисовано")
+
             # Отладочная информация - покажем координаты кнопок
             debug_text = self.font.render(f"{level_index + 1}:{level_rect.topleft}", True, RED)
             self.screen.blit(debug_text, (level_rect.x, level_rect.y - 20))
@@ -413,6 +419,7 @@ class Game:
         # Добавим инструкцию
         instruction = self.font.render("Щелкните по номеру уровня или нажмите цифру 1-9", True, WHITE)
         self.screen.blit(instruction, (SCREEN_WIDTH // 2 - instruction.get_width() // 2, SCREEN_HEIGHT - 50))
+
     def start_level(self, level):
         """Initialize level with given number"""
         print(f"Запуск уровня {level}")
@@ -456,38 +463,43 @@ class Game:
         """Handle pygame events"""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                self.save_progress()  # Сохраняем прогресс при выходе
+                self.save_progress()
                 return False
+
             elif event.type == pygame.USEREVENT + 1:
                 # Музыка закончилась - перезапускаем
                 if self.game_state == "playing":
                     self.play_track_for_level(self.current_level)
                 else:
                     self.play_menu_music()
+
             elif event.type == pygame.MOUSEBUTTONDOWN and self.game_state == "level_select":
                 mouse_pos = pygame.mouse.get_pos()
-                print(f"Клик по координатам: {mouse_pos}")  # Отладочная информация
+                print(f"Клик по координатам: {mouse_pos}")
 
                 for i, rect in enumerate(self.level_rects):
-                    if rect.collidepoint(mouse_pos) and i + 1 <= self.max_unlocked_level:
-                        print(f"Кнопка уровня {i + 1} нажата! Доступно: {i + 1 <= self.max_unlocked_level}")
-                        self.start_level(i + 1)
-                        break
-                    else:
-                        print("уровень заблокирован")
-
-            elif event.type == pygame.KEYDOWN:
-                if self.game_state == "level_select":
-                    print(f"Нажата клавиша: {event.key}")  # Отладочная информация
-
-                    # Быстрая навигация по уровням с клавиатуры
-                    if pygame.K_1 <= event.key <= pygame.K_0 + MAX_LEVELS:
-                        level = event.key - pygame.K_1 + 1
-                        print(f"выбор уровня{level} с клавиатуры")
-                        if level <= self.max_unlocked_level:
-                            self.start_level(level)
+                    if rect.collidepoint(mouse_pos):
+                        level_number = i + 1
+                        if level_number <= self.max_unlocked_level:
+                            print(f"Запуск уровня {level_number}")
+                            self.start_level(level_number)
+                            break
                         else:
-                            print("уровень заблокирован")
+                            print(f"Уровень {level_number} заблокирован!")
+
+            elif event.type == pygame.KEYDOWN and self.game_state == "level_select":
+                print(f"Нажата клавиша: {event.key}")
+
+                # Быстрая навигация по уровням с клавиатуры
+                if pygame.K_1 <= event.key <= pygame.K_0 + min(MAX_LEVELS, 9):
+                    level = event.key - pygame.K_1 + 1
+                    print(f"Выбор уровня {level} с клавиатуры")
+                    if level <= self.max_unlocked_level:
+                        self.start_level(level)
+                    else:
+                        print(f"Уровень {level} заблокирован!")
+
+        print("Обработка событий завершена, продолжается выполнение")
         return True
 
     def update(self):
@@ -653,6 +665,7 @@ class Game:
             self.save_progress()
             pygame.quit()
             sys.exit()
+
 
 if __name__ == "__main__":
     game = Game()
