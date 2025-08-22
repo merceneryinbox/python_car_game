@@ -2,6 +2,7 @@ import pygame
 import sys
 import random
 import os
+import json
 from constants import (
     SCREEN_WIDTH, SCREEN_HEIGHT, WHITE, GREEN, RED, GOLD, CYAN,
     BONUS_HEIGHT, ENEMIES_FOR_FIRST_LEVEL, LEVEL_INCREMENT,
@@ -16,6 +17,10 @@ from bonus import Bonus
 def create_missing_assets():
     """Создает базовые asset файлы если они отсутствуют"""
     base_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # Создаем папку для сохранений
+    saves_dir = os.path.join(base_dir, 'saves')
+    os.makedirs(saves_dir, exist_ok=True)
 
     # Создаем папки если их нет
     assets_dir = os.path.join(base_dir, 'assets')
@@ -164,9 +169,12 @@ class Game:
         # Game states
         self.game_state = "level_select"
         self.current_level = 1
-        self.max_unlocked_level = 1
         self.enemies_defeated = 0
         self.enemies_to_next_level = ENEMIES_FOR_FIRST_LEVEL
+
+        # Загружаем прогресс
+        self.max_unlocked_level = self.load_progress()
+        print(f"Загружен прогресс: максимальный уровень {self.max_unlocked_level}")
 
         # Load assets
         self.backgrounds = self.load_backgrounds()
@@ -186,6 +194,41 @@ class Game:
         # Initially hide special bonuses
         self.shield_bonus.y = -BONUS_HEIGHT
         self.gun_bonus.y = -BONUS_HEIGHT
+
+    def load_progress(self):
+        """Загружает сохраненный прогресс игры"""
+        try:
+            save_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'saves', 'progress.json')
+            if os.path.exists(save_path):
+                with open(save_path, 'r') as f:
+                    data = json.load(f)
+                    return data.get('max_unlocked_level', 1)
+        except Exception as e:
+            print(f"Ошибка загрузки прогресса: {e}")
+        return 1  # По умолчанию первый уровень открыт
+
+    def save_progress(self):
+        """Сохраняет прогресс игры"""
+        try:
+            save_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'saves', 'progress.json')
+            os.makedirs(os.path.dirname(save_path), exist_ok=True)
+
+            data = {
+                'max_unlocked_level': self.max_unlocked_level
+            }
+
+            with open(save_path, 'w') as f:
+                json.dump(data, f)
+            print(f"Прогресс сохранен: уровень {self.max_unlocked_level}")
+        except Exception as e:
+            print(f"Ошибка сохранения прогресса: {e}")
+
+    def unlock_next_level(self):
+        """Разблокирует следующий уровень после прохождения текущего"""
+        if self.current_level >= self.max_unlocked_level:
+            self.max_unlocked_level = min(self.current_level + 1, MAX_LEVELS)
+            self.save_progress()
+            print(f"Разблокирован уровень {self.max_unlocked_level}")
 
     def load_high_quality_sounds(self):
         """Загружает звуки высокого качества"""
@@ -303,6 +346,12 @@ class Game:
             print(f"Ошибка загрузки меню музыки: {e}")
 
     def draw_level_menu(self):
+        """Упрощенное меню выбора уровней"""
+        self.screen.fill((0, 0, 0))
+
+        title_text = self.font.render("ВЫБЕРИТЕ УРОВЕНЬ (1-9):", True, WHITE)
+        self.screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 50))
+
         """Draw level selection menu with level previews"""
         # Используем фон первого уровня для меню
         if self.backgrounds:
@@ -357,9 +406,16 @@ class Game:
             text_color = (0, 0, 0) if color == WHITE or color == GREEN else WHITE
             level_text = self.font.render(f"Уровень {level_index + 1}", True, text_color)
             self.screen.blit(level_text, (level_rect.x + 10, level_rect.y + 8))
+            # Отладочная информация - покажем координаты кнопок
+            debug_text = self.font.render(f"{level_index + 1}:{level_rect.topleft}", True, RED)
+            self.screen.blit(debug_text, (level_rect.x, level_rect.y - 20))
 
+        # Добавим инструкцию
+        instruction = self.font.render("Щелкните по номеру уровня или нажмите цифру 1-9", True, WHITE)
+        self.screen.blit(instruction, (SCREEN_WIDTH // 2 - instruction.get_width() // 2, SCREEN_HEIGHT - 50))
     def start_level(self, level):
         """Initialize level with given number"""
+        print(f"Запуск уровня {level}")
         self.game_state = "playing"
         self.player.lives = PLAYER_LIVES
         self.enemies_defeated = 0
@@ -367,9 +423,19 @@ class Game:
         self.enemies_to_next_level = ENEMIES_FOR_FIRST_LEVEL + (level - 1) * LEVEL_INCREMENT
         self.enemy.speed = min(0.7 + level * 0.3, MAX_ENEMY_SPEED)
 
+        pygame.mixer.music.stop()
+        self.play_track_for_level(level)
+        self.reset_positions()
+
+        def update(self):
+            """Update game state"""
+            if self.game_state != "playing":
+                return
+
         # Обновляем максимальный открытый уровень
         if level > self.max_unlocked_level:
             self.max_unlocked_level = level
+            print(f"Новый максимальный уровень: {self.max_unlocked_level}")
 
         pygame.mixer.music.stop()
         self.play_track_for_level(level)
@@ -390,6 +456,7 @@ class Game:
         """Handle pygame events"""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                self.save_progress()  # Сохраняем прогресс при выходе
                 return False
             elif event.type == pygame.USEREVENT + 1:
                 # Музыка закончилась - перезапускаем
@@ -399,17 +466,28 @@ class Game:
                     self.play_menu_music()
             elif event.type == pygame.MOUSEBUTTONDOWN and self.game_state == "level_select":
                 mouse_pos = pygame.mouse.get_pos()
+                print(f"Клик по координатам: {mouse_pos}")  # Отладочная информация
+
                 for i, rect in enumerate(self.level_rects):
                     if rect.collidepoint(mouse_pos) and i + 1 <= self.max_unlocked_level:
+                        print(f"Кнопка уровня {i + 1} нажата! Доступно: {i + 1 <= self.max_unlocked_level}")
                         self.start_level(i + 1)
                         break
+                    else:
+                        print("уровень заблокирован")
+
             elif event.type == pygame.KEYDOWN:
                 if self.game_state == "level_select":
+                    print(f"Нажата клавиша: {event.key}")  # Отладочная информация
+
                     # Быстрая навигация по уровням с клавиатуры
                     if pygame.K_1 <= event.key <= pygame.K_0 + MAX_LEVELS:
                         level = event.key - pygame.K_1 + 1
+                        print(f"выбор уровня{level} с клавиатуры")
                         if level <= self.max_unlocked_level:
                             self.start_level(level)
+                        else:
+                            print("уровень заблокирован")
         return True
 
     def update(self):
@@ -442,6 +520,8 @@ class Game:
             if not self.player.gun_active:
                 self.enemies_defeated += 1
             if self.enemies_defeated >= self.enemies_to_next_level:
+                # УРОВЕНЬ ПРОЙДЕН - РАЗБЛОКИРУЕМ СЛЕДУЮЩИЙ
+                self.unlock_next_level()
                 self.game_state = "level_select"
                 pygame.mixer.music.stop()
                 self.play_menu_music()
@@ -468,6 +548,8 @@ class Game:
                 self.sound_manager.play_sound('slide')
                 self.reset_positions()
                 if self.player.lives <= 0:
+                    # ИГРА ОКОНЧЕНА - но прогресс сохраняется
+                    print("Игра окончена! Прогресс сохранен.")
                     self.game_state = "level_select"
                     pygame.mixer.music.stop()
                     self.play_menu_music()
@@ -494,6 +576,8 @@ class Game:
 
     def draw(self):
         """Draw game objects"""
+        print(f"Drawing: game_state={self.game_state}")  # Отладочная информация
+
         if self.game_state == "level_select":
             self.draw_level_menu()
         elif self.game_state == "playing":
@@ -534,8 +618,9 @@ class Game:
     def run(self):
         """Main game loop"""
         running = True
-        while running:
-            running = self.handle_events()
+        try:
+            while running:
+                running = self.handle_events()
 
             keys = pygame.key.get_pressed()
             if self.game_state == "playing":
@@ -559,9 +644,15 @@ class Game:
             self.draw()
             self.clock.tick(FPS)
 
-        pygame.quit()
-        sys.exit()
-
+        except Exception as e:
+            print(f"Ошибка в игровом цикле: {e}")
+            import traceback
+            traceback.print_exc()
+        finally:
+            # Всегда сохраняем прогресс при выходе
+            self.save_progress()
+            pygame.quit()
+            sys.exit()
 
 if __name__ == "__main__":
     game = Game()
