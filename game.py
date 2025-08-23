@@ -3,6 +3,8 @@ import sys
 import random
 import os
 import json
+
+from backup import level_rect
 from constants import (
     SCREEN_WIDTH, SCREEN_HEIGHT, WHITE, GREEN, RED, GOLD, CYAN,
     BONUS_HEIGHT, ENEMIES_FOR_FIRST_LEVEL, LEVEL_INCREMENT,
@@ -155,6 +157,7 @@ class SoundManager:
 class Game:
     def __init__(self):
         # Создаем недостающие asset файлы
+        self.level_rects = None
         create_missing_assets()
 
         # Инициализируем pygame
@@ -330,16 +333,76 @@ class Game:
         except Exception as e:
             print(f"Ошибка загрузки музыки уровня: {e}")
 
-    def play_menu_music(self):
-        """Play menu music"""
-        try:            def draw_level_menu(self):
-                """Draw level selection menu with level previews"""
-                print("Отрисовка меню выбора уровней")
+    def draw_level_menu(self):
+        """Draw level selection menu with level previews"""
+        print("Отрисовка меню выбора уровней")
 
-                # Используем фон первого уровня для меню
-                if self.backgrounds:
-                    self.screen.blit(self.backgrounds[0], (0, 0))
-                    print("Фон м
+        # Используем фон первого уровня для меню
+        if self.backgrounds:
+            self.screen.blit(self.backgrounds[0], (0, 0))
+            print("Фон меню загружен")
+        else:
+            self.screen.fill((0, 0, 0))
+            print("Используется черный фон")
+
+        # Затемняем фон для лучшей читаемости
+        overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 128))
+        self.screen.blit(overlay, (0, 0))
+
+        title_text = self.font.render("Выберите уровень:", True, WHITE)
+        self.screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 30))
+
+        self.level_rects = []
+        for level_index in range(MAX_LEVELS):
+            row = level_index // 5
+            col = level_index % 5
+
+            # Кнопка уровня
+            level_rect = pygame.Rect(
+                SCREEN_WIDTH // 2 - 250 + col * 120,
+                130 + row * 100,
+                100, 30
+            )
+            self.level_rects.append(level_rect)
+
+            # Определяем цвет кнопки
+            is_unlocked = (level_index + 1) <= self.max_unlocked_level
+            is_current = (level_index + 1) == self.current_level
+
+            if is_current:
+                color = GREEN
+            elif is_unlocked:
+                color = WHITE
+            else:
+                color = (100, 100, 100)
+
+            pygame.draw.rect(self.screen, color, level_rect, border_radius=5)
+
+            # Цвет текста
+            text_color = (0, 0, 0) if color == WHITE or color == GREEN else WHITE
+            level_text = self.font.render(f"{level_index + 1}", True, text_color)
+            self.screen.blit(level_text, (level_rect.x + 45, level_rect.y + 8))
+
+            # Показываем замок для заблокированных уровней
+            if not is_unlocked:
+                lock_text = self.font.render("🔒", True, WHITE)
+                self.screen.blit(lock_text, (level_rect.x + 10, level_rect.y + 8))
+
+        # Информация о прогресse
+        progress_text = self.font.render(f"Открыто уровней: {self.max_unlocked_level}/{MAX_LEVELS}", True,
+                                         WHITE)
+        self.screen.blit(progress_text,
+                         (SCREEN_WIDTH // 2 - progress_text.get_width() // 2, SCREEN_HEIGHT - 80))
+
+        instruction = self.font.render("Щелкните по номеру уровня или нажмите цифру 1-9", True, WHITE)
+        self.screen.blit(instruction, (SCREEN_WIDTH // 2 - instruction.get_width() // 2, SCREEN_HEIGHT - 50))
+
+        print("Меню отрисовано")
+
+    def play_menu_music(self, level_index=None):
+        """Play menu music"""
+        try:
             if self.menu_music and os.path.exists(self.menu_music):
                 pygame.mixer.music.load(self.menu_music)
                 pygame.mixer.music.set_volume(0.6)
@@ -351,67 +414,6 @@ class Game:
                 pygame.mixer.music.play(-1)
         except Exception as e:
             print(f"Ошибка загрузки меню музыки: {e}")
-
-            еню загружен")
-                else:
-                    self.screen.fill((0, 0, 0))
-                    print("Используется черный фон")
-
-                # Затемняем фон для лучшей читаемости
-                overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
-                overlay.fill((0, 0, 0, 128))
-                self.screen.blit(overlay, (0, 0))
-
-                title_text = self.font.render("Выберите уровень:", True, WHITE)
-                self.screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 30))
-
-                self.level_rects = []
-                for level_index in range(MAX_LEVELS):
-                    row = level_index // 5
-                    col = level_index % 5
-
-                    # Кнопка уровня
-                    level_rect = pygame.Rect(
-                        SCREEN_WIDTH // 2 - 250 + col * 120,
-                        130 + row * 100,
-                        100, 30
-                    )
-                    self.level_rects.append(level_rect)
-
-                    # Определяем цвет кнопки
-                    is_unlocked = (level_index + 1) <= self.max_unlocked_level
-                    is_current = (level_index + 1) == self.current_level
-
-                    if is_current:
-                        color = GREEN
-                    elif is_unlocked:
-                        color = WHITE
-                    else:
-                        color = (100, 100, 100)
-
-                    pygame.draw.rect(self.screen, color, level_rect, border_radius=5)
-
-                    # Цвет текста
-                    text_color = (0, 0, 0) if color == WHITE or color == GREEN else WHITE
-                    level_text = self.font.render(f"{level_index + 1}", True, text_color)
-                    self.screen.blit(level_text, (level_rect.x + 45, level_rect.y + 8))
-
-                    # Показываем замок для заблокированных уровней
-                    if not is_unlocked:
-                        lock_text = self.font.render("🔒", True, WHITE)
-                        self.screen.blit(lock_text, (level_rect.x + 10, level_rect.y + 8))
-
-                # Информация о прогресse
-                progress_text = self.font.render(f"Открыто уровней: {self.max_unlocked_level}/{MAX_LEVELS}", True,
-                                                 WHITE)
-                self.screen.blit(progress_text,
-                                 (SCREEN_WIDTH // 2 - progress_text.get_width() // 2, SCREEN_HEIGHT - 80))
-
-                instruction = self.font.render("Щелкните по номеру уровня или нажмите цифру 1-9", True, WHITE)
-                self.screen.blit(instruction, (SCREEN_WIDTH // 2 - instruction.get_width() // 2, SCREEN_HEIGHT - 50))
-
-                print("Меню отрисовано")
-
             # Отладочная информация - покажем координаты кнопок
             debug_text = self.font.render(f"{level_index + 1}:{level_rect.topleft}", True, RED)
             self.screen.blit(debug_text, (level_rect.x, level_rect.y - 20))
