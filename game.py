@@ -1,19 +1,20 @@
-import pygame
-import sys
-import random
-import os
 import json
+import os
+import random
+import sys
+
+import pygame
 
 from backup import level_rect
+from bonus import Bonus
 from constants import (
-    SCREEN_WIDTH, SCREEN_HEIGHT, WHITE, GREEN, RED, GOLD, CYAN,
+    SCREEN_WIDTH, SCREEN_HEIGHT, WHITE, GREEN, RED, CYAN,
     BONUS_HEIGHT, ENEMIES_FOR_FIRST_LEVEL, LEVEL_INCREMENT,
     MAX_ENEMY_SPEED, PLAYER_LIVES, MAX_LEVELS, FPS,
     BONUS_SPAWN_CHANCE, SHIELD_SPAWN_CHANCE, GUN_SPAWN_CHANCE
 )
-from player import Player
 from enemy import Enemy
-from bonus import Bonus
+from player import Player
 
 
 def create_missing_assets():
@@ -100,22 +101,27 @@ def create_missing_assets():
             print(f"Создан фон для уровня {i}: {bg_path}")
 
 
+def setup_audio():
+    """Настраивает аудио систему для высокого качества"""
+    pygame.mixer.init(
+        frequency=44100,
+        size=-16,
+        channels=2,
+        buffer=2048
+    )
+    pygame.mixer.set_num_channels(16)
+
+
+def stop_all():
+    pygame.mixer.stop()
+
+
 class SoundManager:
     def __init__(self):
         self.sounds = {}
         self.music_volume = 0.7
         self.sound_volume = 0.8
-        self.setup_audio()
-
-    def setup_audio(self):
-        """Настраивает аудио систему для высокого качества"""
-        pygame.mixer.init(
-            frequency=44100,
-            size=-16,
-            channels=2,
-            buffer=2048
-        )
-        pygame.mixer.set_num_channels(16)
+        setup_audio()
 
     def load_sound(self, name, path, volume=1.0):
         """Загружает звук с высоким качеством"""
@@ -150,13 +156,77 @@ class SoundManager:
         for sound in self.sounds.values():
             sound.set_volume(self.sound_volume)
 
-    def stop_all(self):
-        pygame.mixer.stop()
+
+def load_progress():
+    """Загружает сохраненный прогресс игры"""
+    try:
+        save_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'saves', 'progress.json')
+        if os.path.exists(save_path):
+            with open(save_path, 'r') as f:
+                data = json.load(f)
+                return data.get('max_unlocked_level', 1)
+    except Exception as e:
+        print(f"Ошибка загрузки прогресса: {e}")
+    return 1  # По умолчанию первый уровень открыт
+
+
+def load_backgrounds():
+    """Загружает фоны для уровней из папки assets/backgrounds"""
+    backgrounds = []
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    backgrounds_dir = os.path.join(base_dir, 'assets', 'backgrounds')
+
+    print("Загрузка фонов...")
+
+    for i in range(1, MAX_LEVELS + 1):
+        bg_path = os.path.join(backgrounds_dir, f'level_{i}.png')
+
+        if os.path.exists(bg_path):
+            try:
+                # Загружаем изображение фона
+                bg_image = pygame.image.load(bg_path).convert()
+                # Масштабируем под размер экрана если нужно
+                if bg_image.get_width() != SCREEN_WIDTH or bg_image.get_height() != SCREEN_HEIGHT:
+                    bg_image = pygame.transform.scale(bg_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
+                backgrounds.append(bg_image)
+                print(f"Фон уровня {i} загружен: {bg_path}")
+
+            except Exception as e:
+                print(f"Ошибка загрузки фона уровня {i}: {e}")
+                # Создаем заглушку
+                surf = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+                color = ((i * 40) % 255, (i * 60) % 255, (i * 80) % 255)
+                surf.fill(color)
+                # Добавляем номер уровня
+                font = pygame.font.SysFont(None, 100)
+                text = font.render(f"LEVEL {i}", True, WHITE)
+                surf.blit(text, (SCREEN_WIDTH // 2 - text.get_width() // 2,
+                                 SCREEN_HEIGHT // 2 - text.get_height() // 2))
+                backgrounds.append(surf)
+        else:
+            print(f"Фон уровня {i} не найден: {bg_path}")
+            # Создаем заглушку
+            surf = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+            color = ((i * 30) % 255, (i * 50) % 255, (i * 70) % 255)
+            surf.fill(color)
+            backgrounds.append(surf)
+
+    # Если не загрузилось ни одного фона, создаем базовые
+    if not backgrounds:
+        for i in range(MAX_LEVELS):
+            surf = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+            color = (i * 30, i * 20, i * 40)
+            surf.fill(color)
+            backgrounds.append(surf)
+
+    return backgrounds
 
 
 class Game:
     def __init__(self):
         # Создаем недостающие asset файлы
+        self.menu_music = None
+        self.playlist = None
         self.level_rects = None
         create_missing_assets()
 
@@ -176,11 +246,11 @@ class Game:
         self.enemies_to_next_level = ENEMIES_FOR_FIRST_LEVEL
 
         # Загружаем прогресс
-        self.max_unlocked_level = self.load_progress()
+        self.max_unlocked_level = load_progress()
         print(f"Загружен прогресс: максимальный уровень {self.max_unlocked_level}")
 
         # Load assets
-        self.backgrounds = self.load_backgrounds()
+        self.backgrounds = load_backgrounds()
         self.sound_manager = SoundManager()
         self.load_high_quality_sounds()
         self.load_music()
@@ -197,18 +267,6 @@ class Game:
         # Initially hide special bonuses
         self.shield_bonus.y = -BONUS_HEIGHT
         self.gun_bonus.y = -BONUS_HEIGHT
-
-    def load_progress(self):
-        """Загружает сохраненный прогресс игры"""
-        try:
-            save_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'saves', 'progress.json')
-            if os.path.exists(save_path):
-                with open(save_path, 'r') as f:
-                    data = json.load(f)
-                    return data.get('max_unlocked_level', 1)
-        except Exception as e:
-            print(f"Ошибка загрузки прогресса: {e}")
-        return 1  # По умолчанию первый уровень открыт
 
     def save_progress(self):
         """Сохраняет прогресс игры"""
@@ -243,57 +301,6 @@ class Game:
 
         for name, path, volume in sounds_to_load:
             self.sound_manager.load_sound(name, path, volume)
-
-    def load_backgrounds(self):
-        """Загружает фоны для уровней из папки assets/backgrounds"""
-        backgrounds = []
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        backgrounds_dir = os.path.join(base_dir, 'assets', 'backgrounds')
-
-        print("Загрузка фонов...")
-
-        for i in range(1, MAX_LEVELS + 1):
-            bg_path = os.path.join(backgrounds_dir, f'level_{i}.png')
-
-            if os.path.exists(bg_path):
-                try:
-                    # Загружаем изображение фона
-                    bg_image = pygame.image.load(bg_path).convert()
-                    # Масштабируем под размер экрана если нужно
-                    if bg_image.get_width() != SCREEN_WIDTH or bg_image.get_height() != SCREEN_HEIGHT:
-                        bg_image = pygame.transform.scale(bg_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
-                    backgrounds.append(bg_image)
-                    print(f"Фон уровня {i} загружен: {bg_path}")
-
-                except Exception as e:
-                    print(f"Ошибка загрузки фона уровня {i}: {e}")
-                    # Создаем заглушку
-                    surf = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-                    color = ((i * 40) % 255, (i * 60) % 255, (i * 80) % 255)
-                    surf.fill(color)
-                    # Добавляем номер уровня
-                    font = pygame.font.SysFont(None, 100)
-                    text = font.render(f"LEVEL {i}", True, WHITE)
-                    surf.blit(text, (SCREEN_WIDTH // 2 - text.get_width() // 2,
-                                     SCREEN_HEIGHT // 2 - text.get_height() // 2))
-                    backgrounds.append(surf)
-            else:
-                print(f"Фон уровня {i} не найден: {bg_path}")
-                # Создаем заглушку
-                surf = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-                color = ((i * 30) % 255, (i * 50) % 255, (i * 70) % 255)
-                surf.fill(color)
-                backgrounds.append(surf)
-
-        # Если не загрузилось ни одного фона, создаем базовые
-        if not backgrounds:
-            for i in range(MAX_LEVELS):
-                surf = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-                color = (i * 30, i * 20, i * 40)
-                surf.fill(color)
-                backgrounds.append(surf)
-
-        return backgrounds
 
     def load_music(self):
         """Load high quality music"""
@@ -359,12 +366,12 @@ class Game:
             col = level_index % 5
 
             # Кнопка уровня
-            level_rect = pygame.Rect(
+            level_rect_ = pygame.Rect(
                 SCREEN_WIDTH // 2 - 250 + col * 120,
                 130 + row * 100,
                 100, 30
             )
-            self.level_rects.append(level_rect)
+            self.level_rects.append(level_rect_)
 
             # Определяем цвет кнопки
             is_unlocked = (level_index + 1) <= self.max_unlocked_level
@@ -377,19 +384,19 @@ class Game:
             else:
                 color = (100, 100, 100)
 
-            pygame.draw.rect(self.screen, color, level_rect, border_radius=5)
+            pygame.draw.rect(self.screen, color, level_rect_, border_radius=5)
 
             # Цвет текста
             text_color = (0, 0, 0) if color == WHITE or color == GREEN else WHITE
             level_text = self.font.render(f"{level_index + 1}", True, text_color)
-            self.screen.blit(level_text, (level_rect.x + 45, level_rect.y + 8))
+            self.screen.blit(level_text, (level_rect_.x + 45, level_rect_.y + 8))
 
             # Показываем замок для заблокированных уровней
             if not is_unlocked:
                 lock_text = self.font.render("🔒", True, WHITE)
-                self.screen.blit(lock_text, (level_rect.x + 10, level_rect.y + 8))
+                self.screen.blit(lock_text, (level_rect_.x + 10, level_rect_.y + 8))
 
-        # Информация о прогресse
+        # Информация о прогрессe
         progress_text = self.font.render(f"Открыто уровней: {self.max_unlocked_level}/{MAX_LEVELS}", True,
                                          WHITE)
         self.screen.blit(progress_text,
@@ -435,11 +442,6 @@ class Game:
         pygame.mixer.music.stop()
         self.play_track_for_level(level)
         self.reset_positions()
-
-        def update(self):
-            """Update game state"""
-            if self.game_state != "playing":
-                return
 
         # Обновляем максимальный открытый уровень
         if level > self.max_unlocked_level:
