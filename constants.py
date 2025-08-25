@@ -1,6 +1,7 @@
 # Game settings
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 660
+ROAD_WIDTH = 400  # Ширина дороги посередине экрана
 FPS = 120
 
 # Player settings

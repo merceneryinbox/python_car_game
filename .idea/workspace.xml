@@ -5,57 +5,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0ef8d840-4cab-4ea5-83d9-283d1225862d" name="Changes" comment="опробовал добавить картинки к бонусам">
+      <change afterPath="$PROJECT_DIR$/assets/images/gun_bonus.PNG" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/regular_bonus.PNG" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/shield_bonus.PNG" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/python_car_game.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/python_car_game.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/.mp3" beforeDir="false" afterPath="$PROJECT_DIR$/assets/sounds/.mp3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/.wav" beforeDir="false" afterPath="$PROJECT_DIR$/assets/sounds/.wav" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/DALL·E 2024-11-03 13.56.50 - Pixel art of a desert landscape viewed from above, showing sand dunes with wavy patterns, a few scattered rocks, and sparse vegetation like tiny cacti.webp" beforeDir="false" afterPath="$PROJECT_DIR$/assets/images/DALL·E 2024-11-03 13.56.50 - Pixel art of a desert landscape viewed from above, showing sand dunes with wavy patterns, a few scattered rocks, and sparse vegetation like tiny cacti.webp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/FAЙЛИК.PNG" beforeDir="false" afterPath="$PROJECT_DIR$/assets/images/FAЙЛИК.PNG" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/KOTIK.PNG" beforeDir="false" afterPath="$PROJECT_DIR$/assets/images/KOTIK.PNG" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/background_music1.mp3" beforeDir="false" afterPath="$PROJECT_DIR$/assets/sounds/background_music1.mp3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/background_music2.mp3" beforeDir="false" afterPath="$PROJECT_DIR$/assets/sounds/background_music2.mp3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/background_music3.mp3" beforeDir="false" afterPath="$PROJECT_DIR$/assets/sounds/background_music3.mp3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/background_music4.mp3" beforeDir="false" afterPath="$PROJECT_DIR$/assets/sounds/background_music4.mp3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/car.PNG" beforeDir="false" afterPath="$PROJECT_DIR$/assets/images/car.PNG" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/car1.PNG" beforeDir="false" afterPath="$PROJECT_DIR$/assets/images/car1.PNG" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/car2.PNG" beforeDir="false" afterPath="$PROJECT_DIR$/assets/images/car2.PNG" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/car4.PNG" beforeDir="false" afterPath="$PROJECT_DIR$/assets/images/car4.PNG" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/car5.PNG" beforeDir="false" afterPath="$PROJECT_DIR$/assets/images/car5.PNG" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/car7.PNG" beforeDir="false" afterPath="$PROJECT_DIR$/assets/images/car7.PNG" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/car_enemy.PNG" beforeDir="false" afterPath="$PROJECT_DIR$/assets/images/car_enemy.PNG" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/car_player.PNG" beforeDir="false" afterPath="$PROJECT_DIR$/assets/images/car_player.PNG" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/desert.webp" beforeDir="false" afterPath="$PROJECT_DIR$/assets/images/desert.webp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/desert_.webp" beforeDir="false" afterPath="$PROJECT_DIR$/assets/images/desert_.webp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/desert_back.webp" beforeDir="false" afterPath="$PROJECT_DIR$/assets/images/desert_back.webp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/desert_backgrond_level_7.webp" beforeDir="false" afterPath="$PROJECT_DIR$/assets/images/desert_backgrond_level_7.webp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/desert_background.webp" beforeDir="false" afterPath="$PROJECT_DIR$/assets/images/desert_background.webp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/desert_background_level_1.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/images/desert_background_level_1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/desert_background_level_2.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/images/desert_background_level_2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/desert_background_level_3.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/images/desert_background_level_3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/desert_background_level_4.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/images/desert_background_level_4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/desert_background_level_5.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/images/desert_background_level_5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/desert_background_level_6.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/images/desert_background_level_6.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/desert_background_level_6.webp" beforeDir="false" afterPath="$PROJECT_DIR$/assets/images/desert_background_level_6.webp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/desert_background_level_7.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/images/desert_background_level_7.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/desert_background_menu.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/images/desert_background_menu.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/desert_dackground.webp" beforeDir="false" afterPath="$PROJECT_DIR$/assets/images/desert_dackground.webp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/enemy_move.wav" beforeDir="false" afterPath="$PROJECT_DIR$/assets/sounds/enemy_move.wav" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/menu_music.mp3" beforeDir="false" afterPath="$PROJECT_DIR$/assets/sounds/menu_music.mp3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/player_move.wav" beforeDir="false" afterPath="$PROJECT_DIR$/assets/sounds/player_move.wav" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/slide.wav" beforeDir="false" afterPath="$PROJECT_DIR$/assets/sounds/slide.wav" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/slide_backup.wav" beforeDir="false" afterPath="$PROJECT_DIR$/assets/sounds/slide_backup.wav" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/БУРГЕР.PNG" beforeDir="false" afterPath="$PROJECT_DIR$/assets/images/БУРГЕР.PNG" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/ШОКОЛАДНАЯ ВАФЛЯ.PNG" beforeDir="false" afterPath="$PROJECT_DIR$/assets/images/ШОКОЛАДНАЯ ВАФЛЯ.PNG" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/звук" beforeDir="false" afterPath="$PROJECT_DIR$/assets/sounds/звук" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/пиксильная машинка игрока №1(Chat GPT).webp" beforeDir="false" afterPath="$PROJECT_DIR$/assets/images/пиксильная машинка игрока №1(Chat GPT).webp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets_loader.py" beforeDir="false" afterPath="$PROJECT_DIR$/assets_loader.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backup.py" beforeDir="false" afterPath="$PROJECT_DIR$/backup.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bonus.py" beforeDir="false" afterPath="$PROJECT_DIR$/bonus.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/constants.py" beforeDir="false" afterPath="$PROJECT_DIR$/constants.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/enemy.py" beforeDir="false" afterPath="$PROJECT_DIR$/enemy.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/game.py" beforeDir="false" afterPath="$PROJECT_DIR$/game.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main_with_gun_animation.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_with_gun_animation.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/player.py" beforeDir="false" afterPath="$PROJECT_DIR$/player.py" afterDir="false" />
     </list>
+    <list id="92136aab-7a5f-4d89-9b71-2a8eeb4acfc6" name="bonus_cherry_pick" comment="bonus_cherry_pick" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -102,9 +61,11 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;clean__python__ai__fixes&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/merce/PycharmProjects/python_car_game/assets/images&quot;
+    &quot;git-widget-placeholder&quot;: &quot;clean__python__ai__fixes__PAPA&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/merce/PycharmProjects/python_car_game/assets/images&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
   <component name="RecentsManager">
@@ -126,11 +87,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="SDK_NAME" value="Python 3.13" />
+      <option name="SDK_NAME" value="Python 3.13 (python_car_game)" />
       <option name="WORKING_DIRECTORY" value="" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
@@ -144,7 +106,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-d9fa9deec7cb-d902c0275401-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-252.23892.515" />
+        <option value="bundled-python-sdk-7e47963ff851-f0eec537fc84-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-252.23892.515" />
       </set>
     </attachedChunks>
   </component>
@@ -155,6 +117,10 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1755366709623</updated>
+      <workItem from="1756054421710" duration="189000" />
+      <workItem from="1756054633187" duration="57000" />
+      <workItem from="1756054716697" duration="74000" />
+      <workItem from="1756128711981" duration="111000" />
     </task>
     <task id="LOCAL-00001" summary="изменил размеры шрифта, &#10;поменял скорость,&#10;поменял продолжительность использования пушки">
       <option name="closed" value="true" />
@@ -199,6 +165,9 @@
     <option name="localTasksCounter" value="6" />
     <servers />
   </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="RECENT_FILTERS">
       <map>
@@ -241,7 +210,12 @@
     <MESSAGE value="изменил размеры шрифта, &#10;поменял скорость,&#10;поменял продолжительность использования пушки" />
     <MESSAGE value="на всякий случай" />
     <MESSAGE value="добавил TODO лист,изменил название папки,изменил загрузку звука" />
+    <MESSAGE value="на всякий случай 3" />
     <MESSAGE value="опробовал добавить картинки к бонусам" />
-    <option name="LAST_COMMIT_MESSAGE" value="опробовал добавить картинки к бонусам" />
+    <MESSAGE value="bonus_cherry_pick" />
+    <option name="LAST_COMMIT_MESSAGE" value="bonus_cherry_pick" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/python_car_game$main.coverage" NAME="main Coverage Results" MODIFIED="1756054758870" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
   </component>
 </project>
