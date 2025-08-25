@@ -6,8 +6,7 @@ from constants import (
     SCREEN_WIDTH, SCREEN_HEIGHT, WHITE, GREEN, RED, GOLD, CYAN,
     BONUS_HEIGHT, ENEMIES_FOR_FIRST_LEVEL, LEVEL_INCREMENT,
     MAX_ENEMY_SPEED, PLAYER_LIVES, MAX_LEVELS, FPS,
-    BONUS_SPAWN_CHANCE, SHIELD_SPAWN_CHANCE, GUN_SPAWN_CHANCE,
-    ROAD_WIDTH
+    BONUS_SPAWN_CHANCE, SHIELD_SPAWN_CHANCE, GUN_SPAWN_CHANCE
 )
 from player import Player
 from enemy import Enemy
@@ -20,7 +19,7 @@ class Game:
         pygame.mixer.init()
 
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-        pygame.display.set_caption('Turbo Racing')
+        pygame.display.set_caption('Турбо гонки')
 
         self.clock = pygame.time.Clock()
         self.font = pygame.font.SysFont(None, 25)
@@ -33,34 +32,7 @@ class Game:
         self.enemies_to_next_level = ENEMIES_FOR_FIRST_LEVEL
 
         # Load assets
-        self.backgrounds = load_backgrounds()
-
-        # === ИСПРАВЛЕНО: Убрано дублирование создания текстур ===
-        # Загружаем текстуры для дороги и пустыни
-        print("Создаем текстуры дороги и пустыни...")
-
-        # Дорога
-        self.road_texture = pygame.Surface((ROAD_WIDTH, SCREEN_HEIGHT))
-        self.road_texture.fill((50, 50, 50))  # Темно-серый цвет дороги
-        # Добавляем разметку на дорогу
-        for i in range(0, SCREEN_HEIGHT, 60):
-            pygame.draw.rect(self.road_texture, (255, 255, 0), (ROAD_WIDTH // 2 - 5, i, 10, 30))  # Желтая разметка
-
-        # Пустыня
-        self.desert_texture = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-        self.desert_texture.fill((194, 178, 128))  # Песочный цвет
-        # Добавляем детали пустыни
-        for _ in range(50):
-            x = random.randint(0, SCREEN_WIDTH - 1)
-            y = random.randint(0, SCREEN_HEIGHT - 1)
-            size = random.randint(3, 8)
-            if random.random() > 0.3:
-                pygame.draw.circle(self.desert_texture, (139, 69, 19), (x, y), size)  # Коричневые камни
-            else:
-                pygame.draw.circle(self.desert_texture, (34, 139, 34), (x, y), size)  # Зеленые кактусы
-
-        print(f"Текстуры созданы: дорога {self.road_texture.get_size()}, пустыня {self.desert_texture.get_size()}")
-
+        self.backgrounds = load_backgrounds()  # Добавлен self.
         self.load_sounds()
         self.load_music()
 
@@ -79,6 +51,7 @@ class Game:
 
     def load_sounds(self):
         """Load all game sounds"""
+
 
         def load_sound(path, volume=0.5):
             """
@@ -129,12 +102,9 @@ class Game:
         pygame.mixer.music.set_volume(0.5)
         pygame.mixer.music.play(-1)
 
-    # === ИСПРАВЛЕНО: Добавлен отсутствующий метод ===
     def draw_level_menu(self):
         """Draw level selection menu"""
-        # ТОЛЬКО для меню - обычный фон БЕЗ дороги и пустыни
-        self.screen.blit(self.backgrounds[0], (0, 0))  # Обычный фон меню
-
+        self.screen.blit(self.backgrounds[0], (0, 0))
         title_text = self.font.render("Выберите уровень:", True, WHITE)
         self.screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 50))
 
@@ -269,22 +239,8 @@ class Game:
         """Draw game objects"""
         if self.game_state == "level_select":
             self.draw_level_menu()
-
         elif self.game_state == "playing":
-            # ТОЛЬКО для игрового уровня - дорога с пустыней
-            print("Рисуем дорогу и пустыню...")  # Отладочное сообщение
-
-            # Рисуем пустыню по всей площади
-            self.screen.blit(self.desert_texture, (0, 0))
-
-            # Рисуем дорогу посередине
-            road_x = (SCREEN_WIDTH - ROAD_WIDTH) // 2
-            self.screen.blit(self.road_texture, (road_x, 0))
-
-            # Отладочная информация
-            debug_text = self.font.render(f"Road X: {road_x}, Road Width: {ROAD_WIDTH}", True, RED)
-            self.screen.blit(debug_text, (10, 90))
-
+            self.screen.blit(self.backgrounds[self.current_level - 1], (0, 0))
             self.player.draw(self.screen)
             self.enemy.draw(self.screen)
             self.regular_bonus.draw(self.screen)
