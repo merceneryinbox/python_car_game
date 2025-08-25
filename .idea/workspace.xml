@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0ef8d840-4cab-4ea5-83d9-283d1225862d" name="Changes" comment="добавил дорогу с пустыней на уровни" />
+    <list default="true" id="0ef8d840-4cab-4ea5-83d9-283d1225862d" name="Changes" comment="добавил дорогу с пустыней на уровни">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/game.py" beforeDir="false" afterPath="$PROJECT_DIR$/game.py" afterDir="false" />
+    </list>
     <list id="92136aab-7a5f-4d89-9b71-2a8eeb4acfc6" name="bonus_cherry_pick" comment="bonus_cherry_pick" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -177,7 +180,15 @@
       <option name="project" value="LOCAL" />
       <updated>1756154493229</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="добавил дорогу с пустыней на уровни">
+      <option name="closed" value="true" />
+      <created>1756154757351</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1756154757351</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

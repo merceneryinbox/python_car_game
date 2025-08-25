@@ -208,6 +208,39 @@ class Game:
         if random.random() < GUN_SPAWN_CHANCE:
             self.gun_bonus.move()
 
+            # Проверка выезда за пределы дороги
+            road_left = (SCREEN_WIDTH - ROAD_WIDTH) // 2
+            road_right = road_left + ROAD_WIDTH
+
+            # Если игрок выехал за левую или правую границу дороги
+            if self.player.x < road_left or self.player.x + self.player.width > road_right:
+                # Замедление
+                if not hasattr(self, 'off_road_slowdown'):
+                    self.off_road_slowdown = True
+                    self.player.speed = max(0.1, self.player.speed - 1)  # Замедляем на 1, но не меньше 0.1
+
+                # Потеря здоровья (раз в секунду, чтобы не терять сразу все жизни)
+                current_time = pygame.time.get_ticks()
+                if not hasattr(self, 'last_damage_time'):
+                    self.last_damage_time = current_time
+
+                if current_time - self.last_damage_time > 1000:  # Раз в секунду
+                    self.player.lives -= 3
+                    self.last_damage_time = current_time
+                    print(f"Выехал за дорогу! Потеряно 3 здоровья. Осталось: {self.player.lives}")
+
+                    # Проверка на смерть
+                    if self.player.lives <= 0:
+                        self.game_state = "level_select"
+                        pygame.mixer.music.stop()
+                        self.play_menu_music()
+            else:
+                # Если игрок вернулся на дорогу, восстанавливаем нормальную скорость
+                if hasattr(self, 'off_road_slowdown'):
+                    self.player.speed = 2.5  # Нормальная скорость
+                    del self.off_road_slowdown
+            # === КОНЕЦ БЛОКА ===
+
         # Check if gun active and enemy is on same line
         if self.player.gun_active and abs(self.player.y - self.enemy.y) < 10:
             self.enemies_defeated += 1
