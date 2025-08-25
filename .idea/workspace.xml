@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0ef8d840-4cab-4ea5-83d9-283d1225862d" name="Changes" comment="добавил дорогу с пустыней на уровни">
+    <list default="true" id="0ef8d840-4cab-4ea5-83d9-283d1225862d" name="Changes" comment="Теперь нельзя выезжать на дорогу!">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/game.py" beforeDir="false" afterPath="$PROJECT_DIR$/game.py" afterDir="false" />
     </list>
@@ -188,7 +188,15 @@
       <option name="project" value="LOCAL" />
       <updated>1756154757351</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="Теперь нельзя выезжать на дорогу!">
+      <option name="closed" value="true" />
+      <created>1756155458250</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1756155458250</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -241,7 +249,8 @@
     <MESSAGE value="bonus_cherry_pick" />
     <MESSAGE value="дабавил дорогу на уровни" />
     <MESSAGE value="добавил дорогу с пустыней на уровни" />
-    <option name="LAST_COMMIT_MESSAGE" value="добавил дорогу с пустыней на уровни" />
+    <MESSAGE value="Теперь нельзя выезжать на дорогу!" />
+    <option name="LAST_COMMIT_MESSAGE" value="Теперь нельзя выезжать на дорогу!" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/python_car_game$main.coverage" NAME="main Coverage Results" MODIFIED="1756054758870" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />

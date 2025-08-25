@@ -1,17 +1,18 @@
-import pygame
-import sys
 import random
+import sys
+
+import pygame
+
 from assets_loader import load_backgrounds
+from bonus import Bonus
 from constants import (
-    SCREEN_WIDTH, SCREEN_HEIGHT, WHITE, GREEN, RED, GOLD, CYAN,
-    BONUS_HEIGHT, ENEMIES_FOR_FIRST_LEVEL, LEVEL_INCREMENT,
+    SCREEN_WIDTH, SCREEN_HEIGHT, WHITE, GREEN, RED, BONUS_HEIGHT, ENEMIES_FOR_FIRST_LEVEL, LEVEL_INCREMENT,
     MAX_ENEMY_SPEED, PLAYER_LIVES, MAX_LEVELS, FPS,
     BONUS_SPAWN_CHANCE, SHIELD_SPAWN_CHANCE, GUN_SPAWN_CHANCE,
     ROAD_WIDTH
 )
-from player import Player
 from enemy import Enemy
-from bonus import Bonus
+from player import Player
 
 
 class Game:
@@ -41,7 +42,11 @@ class Game:
 
         # Дорога
         self.road_texture = pygame.Surface((ROAD_WIDTH, SCREEN_HEIGHT))
-        self.road_texture.fill((50, 50, 50))  # Темно-серый цвет дороги
+        self.road_texture.fill((50, 50, 50)) # Темно-серый цвет дороги
+        # === ВСТАВЬТЕ ЭТОТ БЛОК ЗДЕСЬ ===
+        # Добавляем красные линии по краям дороги
+        pygame.draw.rect(self.road_texture, RED, (0, 0, 5, SCREEN_HEIGHT))  # Левая красная линия
+        pygame.draw.rect(self.road_texture, RED, (ROAD_WIDTH - 5, 0, 5, SCREEN_HEIGHT))  # Правая красная линия
         # Добавляем разметку на дорогу
         for i in range(0, SCREEN_HEIGHT, 60):
             pygame.draw.rect(self.road_texture, (255, 255, 0), (ROAD_WIDTH // 2 - 5, i, 10, 30))  # Желтая разметка
