@@ -2,14 +2,14 @@ import random
 import sys
 import pygame
 import os
-from assets_loader import load_backgrounds, load_image  # Добавьте load_image
+from assets_loader import load_backgrounds, load_image
 
 from assets_loader import load_backgrounds
 from bonus import Bonus
 from constants import (
     SCREEN_WIDTH, SCREEN_HEIGHT, WHITE, GREEN, RED, BONUS_HEIGHT, ENEMIES_FOR_FIRST_LEVEL, LEVEL_INCREMENT,
     MAX_ENEMY_SPEED, PLAYER_LIVES, MAX_LEVELS, FPS,
-    BONUS_SPAWN_CHANCE, SHIELD_SPAWN_CHANCE, GUN_SPAWN_CHANCE,
+    BONUS_SPAWN_CHANCE, SHIELD_SPAWN_CHANCE, GUN_SPAWN_CHANCE, JEEP_SPAWN_CHANCE, JEEP_DURATION,
     ROAD_WIDTH
 )
 from enemy import Enemy
@@ -48,7 +48,7 @@ class Game:
         self.road_texture.fill((50, 50, 50))  # Темно-серый цвет дороги
 
         # Переменные для анимации дороги
-        self.road_offset = 0  # Смещение для анимации дороги
+        self.road_offset = 2  # Смещение для анимации дороги
         self.road_speed = 3  # Скорость движения дороги
 
         # === ВСТАВЬТЕ ЭТОТ БЛОК ЗДЕСЬ ===
@@ -90,13 +90,23 @@ class Game:
         self.shield_bonus.y = -BONUS_HEIGHT
         self.gun_bonus.y = -BONUS_HEIGHT
 
+        # Jeep bonus
+        self.jeep_bonus = Bonus("jeep")
+        self.jeep_bonus.y = -BONUS_HEIGHT  # Скрываем initially
+
+        # Добавьте флаги для джипа
+        self.jeep_active = False
+        self.jeep_time = 0
+        self.original_player_image = None  # Для хранения оригинального изображения
+        self.jeep_image = None  # Изображение джипа
+
         # Таблички со скелетом
         self.skeleton_signs = []
-        self.skeleton_image = None
+        self.skeleton_head_image = None  # Изменили на голову
         self.skeleton_spawn_chance = 0.005  # Шанс появления таблички за кадр
         self.skeleton_speed = 2  # Скорость движения табличек
 
-        # Загружаем изображение скелета
+        # Загружаем изображение скелета и вырезаем только голову
         try:
             # Пробуем несколько возможных путей
             possible_paths = [
@@ -107,10 +117,11 @@ class Game:
             ]
 
             skeleton_loaded = False
+            full_image = None
             for path in possible_paths:
                 try:
                     if os.path.exists(path):
-                        self.skeleton_image = pygame.image.load(path).convert_alpha()
+                        full_image = pygame.image.load(path).convert_alpha()
                         print(f"Изображение скелета загружено из {path}")
                         skeleton_loaded = True
                         break
@@ -120,21 +131,58 @@ class Game:
             if not skeleton_loaded:
                 raise Exception("Не удалось загрузить изображение скелета")
 
-            # Масштабируем изображение
-            self.skeleton_image = pygame.transform.scale(self.skeleton_image, (60, 90))
-            print(f"Изображение скелета масштабировано до {self.skeleton_image.get_size()}")
+            # Вырезаем только голову скелета (примерные координаты)
+            head_width = 40
+            head_height = 40
+            # Предполагаем, что голова находится в верхней части изображения
+            head_rect = pygame.Rect((full_image.get_width() - head_width) // 2,
+                                    10,  # Отступ сверху
+                                    head_width, head_height)
+
+            self.skeleton_head_image = pygame.Surface((head_width, head_height), pygame.SRCALPHA)
+            self.skeleton_head_image.blit(full_image, (0, 0), head_rect)
+
+            # Масштабируем если нужно
+            self.skeleton_head_image = pygame.transform.scale(self.skeleton_head_image, (50, 50))
+            print(f"Голова скелета подготовлена: {self.skeleton_head_image.get_size()}")
 
         except Exception as e:
             print(f"Ошибка загрузки изображения скелета: {e}. Создаем заглушку")
-            # Создаем более информативную заглушку
-            self.skeleton_image = pygame.Surface((60, 90), pygame.SRCALPHA)
-            self.skeleton_image.fill((255, 0, 0, 128))  # Полупрозрачный красный
-            pygame.draw.rect(self.skeleton_image, (255, 255, 255), (15, 10, 30, 40))  # Тело
-            pygame.draw.circle(self.skeleton_image, (255, 255, 255), (30, 25), 10)  # Голова
-            pygame.draw.line(self.skeleton_image, (255, 255, 255), (15, 50), (10, 70), 3)  # Рука
-            pygame.draw.line(self.skeleton_image, (255, 255, 255), (45, 50), (50, 70), 3)  # Рука
-            pygame.draw.line(self.skeleton_image, (255, 255, 255), (20, 85), (15, 70), 3)  # Нога
-            pygame.draw.line(self.skeleton_image, (255, 255, 255), (40, 85), (45, 70), 3)  # Нога
+            # Создаем заглушку для головы скелета
+            self.skeleton_head_image = pygame.Surface((50, 50), pygame.SRCALPHA)
+            self.skeleton_head_image.fill((255, 0, 0, 128))  # Полупрозрачный красный
+            pygame.draw.circle(self.skeleton_head_image, (255, 255, 255), (25, 25), 20)  # Голова
+            pygame.draw.circle(self.skeleton_head_image, (0, 0, 0), (20, 20), 3)  # Глаз
+            pygame.draw.circle(self.skeleton_head_image, (0, 0, 0), (30, 20), 3)  # Глаз
+            pygame.draw.rect(self.skeleton_head_image, (0, 0, 0), (20, 30, 10, 5))  # Рот
+
+        # Загрузите изображение джипа
+        try:
+            self.jeep_image = pygame.image.load('assets/images/jeep_2.PNG').convert_alpha()
+            self.jeep_image = pygame.transform.scale(self.jeep_image, (self.player.width, self.player.height))
+            print("Изображение джипа загружено успешно")
+        except:
+            print("Ошибка загрузки изображения джипа. Создаем заглушку")
+            self.jeep_image = pygame.Surface((self.player.width, self.player.height))
+            self.jeep_image.fill((0, 100, 0))  # Темно-зеленый цвет
+            pygame.draw.rect(self.jeep_image, (139, 69, 19), (5, 5, self.player.width - 10, self.player.height - 10))
+
+    def activate_jeep(self):
+        """Активировать бонус джипа"""
+        self.jeep_active = True
+        self.jeep_time = pygame.time.get_ticks()
+        # Сохраняем оригинальное изображение
+        if self.original_player_image is None:
+            self.original_player_image = self.player.image.copy()
+        # Заменяем изображение на джип
+        self.player.image = self.jeep_image
+
+    def deactivate_jeep(self):
+        """Деактивировать бонус джипа"""
+        self.jeep_active = False
+        # Восстанавливаем оригинальное изображение
+        if self.original_player_image is not None:
+            self.player.image = self.original_player_image
 
     def load_sounds(self):
         """Load all game sounds"""
@@ -235,6 +283,10 @@ class Game:
         self.shield_bonus.y = -BONUS_HEIGHT
         self.gun_bonus.y = -BONUS_HEIGHT
 
+        self.jeep_bonus.reset()
+        self.jeep_bonus.y = -BONUS_HEIGHT
+        self.deactivate_jeep()
+
         self.skeleton_signs = []  # Очищаем таблички при ресете
 
     def handle_events(self):
@@ -271,11 +323,18 @@ class Game:
             self.player.activate_shield()
             self.shield_bonus.reset()
             self.shield_bonus.y = -BONUS_HEIGHT
+
         # Player with gun bonus
         if self.gun_bonus.collides_with(self.player):
             self.player.activate_gun()
             self.gun_bonus.reset()
             self.gun_bonus.y = -BONUS_HEIGHT
+
+        # Player with jeep bonus
+        if self.jeep_bonus.collides_with(self.player):
+            self.activate_jeep()
+            self.jeep_bonus.reset()
+            self.jeep_bonus.y = -BONUS_HEIGHT
 
     def check_skeleton_collisions(self):
         """Проверить столкновения с табличками со скелетом"""
@@ -312,13 +371,13 @@ class Game:
         x = random.randint(road_left + 10, road_right - 70)
         y = -90  # Начинаем выше экрана
 
-        # Сохраняем информацию о табличке с правильными размерами изображения
+        # Сохраняем информацию о табличке с правильными размерами изображения головы
         self.skeleton_signs.append({
             'x': x,
             'y': y,
-            'width': self.skeleton_image.get_width(),
-            'height': self.skeleton_image.get_height(),
-            'image': self.skeleton_image  # Сохраняем ссылку на изображение
+            'width': self.skeleton_head_image.get_width(),
+            'height': self.skeleton_head_image.get_height(),
+            'image': self.skeleton_head_image  # Сохраняем ссылку на изображение головы
         })
 
     def update(self):
@@ -345,6 +404,13 @@ class Game:
             self.shield_bonus.move()
         if random.random() < GUN_SPAWN_CHANCE:
             self.gun_bonus.move()
+        if random.random() < JEEP_SPAWN_CHANCE:
+            self.jeep_bonus.move()
+
+        # Добавьте проверку времени действия джипа
+        current_time = pygame.time.get_ticks()
+        if self.jeep_active and current_time - self.jeep_time > JEEP_DURATION:
+            self.deactivate_jeep()
 
         # Спавн и движение табличек со скелетом
         if random.random() < self.skeleton_spawn_chance:
@@ -366,8 +432,8 @@ class Game:
         road_left = (SCREEN_WIDTH - ROAD_WIDTH) // 2
         road_right = road_left + ROAD_WIDTH
 
-        # Если игрок выехал за левую или правую границу дороги
-        if self.player.x < road_left or self.player.x + self.player.width > road_right:
+        # Если игрок выехал за левую или правую границу дороги И у него не активен джип
+        if (self.player.x < road_left or self.player.x + self.player.width > road_right) and not self.jeep_active:
             # Замедление
             if not hasattr(self, 'off_road_slowdown'):
                 self.off_road_slowdown = True
@@ -418,6 +484,9 @@ class Game:
         if self.gun_bonus.is_off_screen():
             self.gun_bonus.reset()
             self.gun_bonus.y = -BONUS_HEIGHT
+        if self.jeep_bonus.is_off_screen():
+            self.jeep_bonus.reset()
+            self.jeep_bonus.y = -BONUS_HEIGHT
 
         # Check collisions
         self.check_collisions()
@@ -429,8 +498,6 @@ class Game:
 
         elif self.game_state == "playing":
             # ТОЛЬКО для игрового уровня - дорога с пустыней
-            print("Рисуем дорогу и пустыню...")  # Отладочное сообщение
-
             # Рисуем пустыню по всей площади
             self.screen.blit(self.desert_texture, (0, 0))
 
@@ -454,20 +521,20 @@ class Game:
 
             self.screen.blit(animated_road, (road_x, 0))
 
-            # Рисуем таблички со скелетом
+            # Рисуем таблички со скелетом - только голову
             for sign in self.skeleton_signs:
-                # Рисуем изображение скелета вместо прямоугольника
+                # Рисуем изображение головы скелета
                 self.screen.blit(sign['image'], (sign['x'], sign['y']))
 
-            # Отладочная информация
-            debug_text = self.font.render(f"Табличек: {len(self.skeleton_signs)}", True, RED)
-            self.screen.blit(debug_text, (10, 90))
-
-            self.player.draw(self.screen)
-            self.enemy.draw(self.screen)
+            # Рисуем бонусы
             self.regular_bonus.draw(self.screen)
             self.shield_bonus.draw(self.screen)
             self.gun_bonus.draw(self.screen)
+            self.jeep_bonus.draw(self.screen)
+
+            # Рисуем игрока и врага
+            self.player.draw(self.screen)
+            self.enemy.draw(self.screen)
 
             # Draw stats
             lives_text = self.font.render(f'Жизни: {self.player.lives}', True, WHITE)

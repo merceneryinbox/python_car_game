@@ -3,6 +3,8 @@ SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 660
 ROAD_WIDTH = 450  # Ширина дороги посередине экрана
 FPS = 120
+JEEP_SPAWN_CHANCE = 0.5  # Шанс появления джипа
+JEEP_DURATION = 7000      # Длительность бонуса в миллисекундах (7 секунд)
 
 # Player settings
 PLAYER_WIDTH = 50
