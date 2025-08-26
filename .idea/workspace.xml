@@ -4,8 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0ef8d840-4cab-4ea5-83d9-283d1225862d" name="Changes" comment="Теперь нельзя выезжать на дорогу!">
+    <list default="true" id="0ef8d840-4cab-4ea5-83d9-283d1225862d" name="Changes" comment="добавил красные линии по краям дороги">
+      <change afterPath="$PROJECT_DIR$/assets/images/skelet — копия.PNG" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/skelet_1 — копия.PNG" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/skelet_2.PNG" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/skelet_3.PNG" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/skelet_5.PNG" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/constants.py" beforeDir="false" afterPath="$PROJECT_DIR$/constants.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/game.py" beforeDir="false" afterPath="$PROJECT_DIR$/game.py" afterDir="false" />
     </list>
     <list id="92136aab-7a5f-4d89-9b71-2a8eeb4acfc6" name="bonus_cherry_pick" comment="bonus_cherry_pick" />
@@ -28,12 +34,12 @@
     &quot;assignee&quot;: &quot;merceneryinbox&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/merceneryinbox/python_car_game.git",
-    "accountId": "b802b242-d905-4518-ade8-bdf54cb70d0c"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/merceneryinbox/python_car_game.git&quot;,
+    &quot;accountId&quot;: &quot;b802b242-d905-4518-ade8-bdf54cb70d0c&quot;
   }
-}]]></component>
+}</component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 3
 }</component>
@@ -196,7 +202,15 @@
       <option name="project" value="LOCAL" />
       <updated>1756155458250</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="добавил красные линии по краям дороги">
+      <option name="closed" value="true" />
+      <created>1756156806103</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1756156806103</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -250,7 +264,8 @@
     <MESSAGE value="дабавил дорогу на уровни" />
     <MESSAGE value="добавил дорогу с пустыней на уровни" />
     <MESSAGE value="Теперь нельзя выезжать на дорогу!" />
-    <option name="LAST_COMMIT_MESSAGE" value="Теперь нельзя выезжать на дорогу!" />
+    <MESSAGE value="добавил красные линии по краям дороги" />
+    <option name="LAST_COMMIT_MESSAGE" value="добавил красные линии по краям дороги" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/python_car_game$main.coverage" NAME="main Coverage Results" MODIFIED="1756054758870" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />

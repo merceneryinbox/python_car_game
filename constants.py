@@ -1,20 +1,20 @@
 # Game settings
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 660
-ROAD_WIDTH = 400  # Ширина дороги посередине экрана
+ROAD_WIDTH = 450  # Ширина дороги посередине экрана
 FPS = 120
 
 # Player settings
 PLAYER_WIDTH = 50
 PLAYER_HEIGHT = 60
-PLAYER_SPEED =2.0
+PLAYER_SPEED =2.5
 PLAYER_LIVES = 5
 
 # Enemy settings
 ENEMY_WIDTH = 50
 ENEMY_HEIGHT = 60
 ENEMY_SPEED = 1.0
-MAX_ENEMY_SPEED = 3.0
+MAX_ENEMY_SPEED = 4.5
 
 # Bonus settings
 BONUS_WIDTH = 40

@@ -1,7 +1,8 @@
 import random
 import sys
-
 import pygame
+import os
+from assets_loader import load_backgrounds, load_image  # Добавьте load_image
 
 from assets_loader import load_backgrounds
 from bonus import Bonus
@@ -19,6 +20,8 @@ class Game:
     def __init__(self):
         pygame.init()
         pygame.mixer.init()
+
+        self.game = None  # Ссылка на game объект
 
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         pygame.display.set_caption('Turbo Racing')
@@ -42,7 +45,12 @@ class Game:
 
         # Дорога
         self.road_texture = pygame.Surface((ROAD_WIDTH, SCREEN_HEIGHT))
-        self.road_texture.fill((50, 50, 50)) # Темно-серый цвет дороги
+        self.road_texture.fill((50, 50, 50))  # Темно-серый цвет дороги
+
+        # Переменные для анимации дороги
+        self.road_offset = 0  # Смещение для анимации дороги
+        self.road_speed = 3  # Скорость движения дороги
+
         # === ВСТАВЬТЕ ЭТОТ БЛОК ЗДЕСЬ ===
         # Добавляем красные линии по краям дороги
         pygame.draw.rect(self.road_texture, RED, (0, 0, 5, SCREEN_HEIGHT))  # Левая красная линия
@@ -82,10 +90,56 @@ class Game:
         self.shield_bonus.y = -BONUS_HEIGHT
         self.gun_bonus.y = -BONUS_HEIGHT
 
+        # Таблички со скелетом
+        self.skeleton_signs = []
+        self.skeleton_image = None
+        self.skeleton_spawn_chance = 0.005  # Шанс появления таблички за кадр
+        self.skeleton_speed = 2  # Скорость движения табличек
+
+        # Загружаем изображение скелета
+        try:
+            # Пробуем несколько возможных путей
+            possible_paths = [
+                'assets/images/skelet_1.png',
+                'assets/images/skeleton.png',
+                'images/skelet_1.png',
+                'images/skeleton.png'
+            ]
+
+            skeleton_loaded = False
+            for path in possible_paths:
+                try:
+                    if os.path.exists(path):
+                        self.skeleton_image = pygame.image.load(path).convert_alpha()
+                        print(f"Изображение скелета загружено из {path}")
+                        skeleton_loaded = True
+                        break
+                except:
+                    continue
+
+            if not skeleton_loaded:
+                raise Exception("Не удалось загрузить изображение скелета")
+
+            # Масштабируем изображение
+            self.skeleton_image = pygame.transform.scale(self.skeleton_image, (60, 90))
+            print(f"Изображение скелета масштабировано до {self.skeleton_image.get_size()}")
+
+        except Exception as e:
+            print(f"Ошибка загрузки изображения скелета: {e}. Создаем заглушку")
+            # Создаем более информативную заглушку
+            self.skeleton_image = pygame.Surface((60, 90), pygame.SRCALPHA)
+            self.skeleton_image.fill((255, 0, 0, 128))  # Полупрозрачный красный
+            pygame.draw.rect(self.skeleton_image, (255, 255, 255), (15, 10, 30, 40))  # Тело
+            pygame.draw.circle(self.skeleton_image, (255, 255, 255), (30, 25), 10)  # Голова
+            pygame.draw.line(self.skeleton_image, (255, 255, 255), (15, 50), (10, 70), 3)  # Рука
+            pygame.draw.line(self.skeleton_image, (255, 255, 255), (45, 50), (50, 70), 3)  # Рука
+            pygame.draw.line(self.skeleton_image, (255, 255, 255), (20, 85), (15, 70), 3)  # Нога
+            pygame.draw.line(self.skeleton_image, (255, 255, 255), (40, 85), (45, 70), 3)  # Нога
+
     def load_sounds(self):
         """Load all game sounds"""
 
-        def load_sound(path, volume=0.5):
+        def load_sound(path, volume=0.7):
             """
             Загружает звуковой файл и настраивает громкость
 
@@ -107,8 +161,8 @@ class Game:
                 return None
 
         self.player_move_sound = load_sound('assets/sounds/player_move.wav', 0.3)
-        self.enemy_move_sound = load_sound('assets/sounds/enemy_move.wav', 0.3)
-        self.slide_sound = load_sound('assets/sounds/slide.wav', 0.5)
+        self.enemy_move_sound = load_sound('assets/sounds/enemy_move.wav', 0.1)
+        self.slide_sound = load_sound('assets/sounds/slide.wav', 0.4)
 
     def load_music(self):
         """Load music playlists"""
@@ -134,7 +188,6 @@ class Game:
         pygame.mixer.music.set_volume(0.5)
         pygame.mixer.music.play(-1)
 
-    # === ИСПРАВЛЕНО: Добавлен отсутствующий метод ===
     def draw_level_menu(self):
         """Draw level selection menu"""
         # ТОЛЬКО для меню - обычный фон БЕЗ дороги и пустыни
@@ -182,6 +235,8 @@ class Game:
         self.shield_bonus.y = -BONUS_HEIGHT
         self.gun_bonus.y = -BONUS_HEIGHT
 
+        self.skeleton_signs = []  # Очищаем таблички при ресете
+
     def handle_events(self):
         """Handle pygame events"""
         for event in pygame.event.get():
@@ -194,10 +249,88 @@ class Game:
                         self.start_level(i + 1)
         return True
 
+    def check_collisions(self):
+        """Check all game collisions"""
+        # Player with enemy
+        if self.enemy.collides_with(self.player):
+            if not self.player.shield_active:
+                self.player.lives -= 1
+                self.reset_positions()
+                if self.player.lives <= 0:
+                    self.game_state = "level_select"
+                    pygame.mixer.music.stop()
+                    self.play_menu_music()
+
+        # Player with regular bonus
+        if self.regular_bonus.collides_with(self.player):
+            self.player.score += 1
+            self.regular_bonus.reset()
+
+        # Player with shield bonus
+        if self.shield_bonus.collides_with(self.player):
+            self.player.activate_shield()
+            self.shield_bonus.reset()
+            self.shield_bonus.y = -BONUS_HEIGHT
+        # Player with gun bonus
+        if self.gun_bonus.collides_with(self.player):
+            self.player.activate_gun()
+            self.gun_bonus.reset()
+            self.gun_bonus.y = -BONUS_HEIGHT
+
+    def check_skeleton_collisions(self):
+        """Проверить столкновения с табличками со скелетом"""
+        for sign in self.skeleton_signs[:]:
+            # Проверяем столкновение с игроком
+            if (self.player.x < sign['x'] + sign['width'] and
+                    self.player.x + self.player.width > sign['x'] and
+                    self.player.y < sign['y'] + sign['height'] and
+                    self.player.y + self.player.height > sign['y']):
+
+                # Столкновение произошло!
+                if not self.player.shield_active:
+                    self.player.lives -= 3.5
+                    print(f"Столкнулся с табличкой! Потеряно 3.5 здоровья. Осталось: {self.player.lives}")
+
+                    # Удаляем табличку
+                    self.skeleton_signs.remove(sign)
+
+                    # Проверка на смерть
+                    if self.player.lives <= 0:
+                        self.game_state = "level_select"
+                        pygame.mixer.music.stop()
+                        self.play_menu_music()
+                else:
+                    # Если есть щит, просто уничтожаем табличку
+                    self.skeleton_signs.remove(sign)
+
+    def spawn_skeleton_sign(self):
+        """Создать новую табличку со скелетом"""
+        road_left = (SCREEN_WIDTH - ROAD_WIDTH) // 2
+        road_right = road_left + ROAD_WIDTH
+
+        # Случайная позиция на дороге
+        x = random.randint(road_left + 10, road_right - 70)
+        y = -90  # Начинаем выше экрана
+
+        # Сохраняем информацию о табличке с правильными размерами изображения
+        self.skeleton_signs.append({
+            'x': x,
+            'y': y,
+            'width': self.skeleton_image.get_width(),
+            'height': self.skeleton_image.get_height(),
+            'image': self.skeleton_image  # Сохраняем ссылку на изображение
+        })
+
     def update(self):
         """Update game state"""
         if self.game_state != "playing":
             return
+
+        # Обновляем анимацию дороги (скорость зависит от уровня)
+        road_speed_factor = min(1.0 + (self.current_level * 0.2), 3.0)
+        self.road_offset += self.road_speed * road_speed_factor
+        if self.road_offset >= 60:
+            self.road_offset = 0
 
         # Update power-ups
         self.player.update_powerups()
@@ -213,38 +346,53 @@ class Game:
         if random.random() < GUN_SPAWN_CHANCE:
             self.gun_bonus.move()
 
-            # Проверка выезда за пределы дороги
-            road_left = (SCREEN_WIDTH - ROAD_WIDTH) // 2
-            road_right = road_left + ROAD_WIDTH
+        # Спавн и движение табличек со скелетом
+        if random.random() < self.skeleton_spawn_chance:
+            self.spawn_skeleton_sign()
 
-            # Если игрок выехал за левую или правую границу дороги
-            if self.player.x < road_left or self.player.x + self.player.width > road_right:
-                # Замедление
-                if not hasattr(self, 'off_road_slowdown'):
-                    self.off_road_slowdown = True
-                    self.player.speed = max(0.1, self.player.speed - 1)  # Замедляем на 1, но не меньше 0.1
+        # Двигаем все таблички СИНХРОННО с дорогой
+        for sign in self.skeleton_signs[:]:
+            # Таблички двигаются с той же скоростью, что и дорога
+            sign['y'] += self.road_speed
 
-                # Потеря здоровья (раз в секунду, чтобы не терять сразу все жизни)
-                current_time = pygame.time.get_ticks()
-                if not hasattr(self, 'last_damage_time'):
-                    self.last_damage_time = current_time
+            # Удаляем таблички, которые уехали за экран
+            if sign['y'] > SCREEN_HEIGHT:
+                self.skeleton_signs.remove(sign)
 
-                if current_time - self.last_damage_time > 1000:  # Раз в секунду
-                    self.player.lives -= 3
-                    self.last_damage_time = current_time
-                    print(f"Выехал за дорогу! Потеряно 3 здоровья. Осталось: {self.player.lives}")
+        # Проверка столкновений с табличками
+        self.check_skeleton_collisions()
 
-                    # Проверка на смерть
-                    if self.player.lives <= 0:
-                        self.game_state = "level_select"
-                        pygame.mixer.music.stop()
-                        self.play_menu_music()
-            else:
-                # Если игрок вернулся на дорогу, восстанавливаем нормальную скорость
-                if hasattr(self, 'off_road_slowdown'):
-                    self.player.speed = 2.5  # Нормальная скорость
-                    del self.off_road_slowdown
-            # === КОНЕЦ БЛОКА ===
+        # Проверка выезда за пределы дороги
+        road_left = (SCREEN_WIDTH - ROAD_WIDTH) // 2
+        road_right = road_left + ROAD_WIDTH
+
+        # Если игрок выехал за левую или правую границу дороги
+        if self.player.x < road_left or self.player.x + self.player.width > road_right:
+            # Замедление
+            if not hasattr(self, 'off_road_slowdown'):
+                self.off_road_slowdown = True
+                self.player.speed = max(0.1, self.player.speed - 1)  # Замедляем на 1, но не меньше 0.1
+
+            # Потеря здоровья (раз в секунду, чтобы не терять сразу все жизни)
+            current_time = pygame.time.get_ticks()
+            if not hasattr(self, 'last_damage_time'):
+                self.last_damage_time = current_time
+
+            if current_time - self.last_damage_time > 1000:  # Раз в секунду
+                self.player.lives -= 2.5
+                self.last_damage_time = current_time
+                print(f"Выехал за дорогу! Потеряно 2.5 здоровья. Осталось: {self.player.lives}")
+
+                # Проверка на смерть
+                if self.player.lives <= 0:
+                    self.game_state = "level_select"
+                    pygame.mixer.music.stop()
+                    self.play_menu_music()
+        else:
+            # Если игрок вернулся на дорогу, восстанавливаем нормальную скорость
+            if hasattr(self, 'off_road_slowdown'):
+                self.player.speed = 2.5  # Нормальная скорость
+                del self.off_road_slowdown
 
         # Check if gun active and enemy is on same line
         if self.player.gun_active and abs(self.player.y - self.enemy.y) < 10:
@@ -274,35 +422,6 @@ class Game:
         # Check collisions
         self.check_collisions()
 
-    def check_collisions(self):
-        """Check all game collisions"""
-        # Player with enemy
-        if self.enemy.collides_with(self.player):
-            if not self.player.shield_active:
-                self.player.lives -= 1
-                self.reset_positions()
-                if self.player.lives <= 0:
-                    self.game_state = "level_select"
-                    pygame.mixer.music.stop()
-                    self.play_menu_music()
-
-        # Player with regular bonus
-        if self.regular_bonus.collides_with(self.player):
-            self.player.score += 1
-            self.regular_bonus.reset()
-
-        # Player with shield bonus
-        if self.shield_bonus.collides_with(self.player):
-            self.player.activate_shield()
-            self.shield_bonus.reset()
-            self.shield_bonus.y = -BONUS_HEIGHT
-
-        # Player with gun bonus
-        if self.gun_bonus.collides_with(self.player):
-            self.player.activate_gun()
-            self.gun_bonus.reset()
-            self.gun_bonus.y = -BONUS_HEIGHT
-
     def draw(self):
         """Draw game objects"""
         if self.game_state == "level_select":
@@ -315,12 +434,33 @@ class Game:
             # Рисуем пустыню по всей площади
             self.screen.blit(self.desert_texture, (0, 0))
 
-            # Рисуем дорогу посередине
+            # Рисуем дорогу посередине с анимацией
             road_x = (SCREEN_WIDTH - ROAD_WIDTH) // 2
-            self.screen.blit(self.road_texture, (road_x, 0))
+
+            # Создаем временную поверхность для анимированной дороги
+            animated_road = pygame.Surface((ROAD_WIDTH, SCREEN_HEIGHT))
+            animated_road.fill((50, 50, 50))  # Основной цвет дороги
+
+            # Красные линии по краям
+            pygame.draw.rect(animated_road, RED, (0, 0, 5, SCREEN_HEIGHT))
+            pygame.draw.rect(animated_road, RED, (ROAD_WIDTH - 5, 0, 5, SCREEN_HEIGHT))
+
+            # Движущаяся разметка (синхронизирована с табличками)
+            for i in range(-60, SCREEN_HEIGHT + 60, 60):
+                mark_y = i + self.road_offset
+                if 0 <= mark_y < SCREEN_HEIGHT:  # Рисуем только видимые segmentы
+                    pygame.draw.rect(animated_road, (255, 255, 0),
+                                     (ROAD_WIDTH // 2 - 5, mark_y, 10, 30))
+
+            self.screen.blit(animated_road, (road_x, 0))
+
+            # Рисуем таблички со скелетом
+            for sign in self.skeleton_signs:
+                # Рисуем изображение скелета вместо прямоугольника
+                self.screen.blit(sign['image'], (sign['x'], sign['y']))
 
             # Отладочная информация
-            debug_text = self.font.render(f"Road X: {road_x}, Road Width: {ROAD_WIDTH}", True, RED)
+            debug_text = self.font.render(f"Табличек: {len(self.skeleton_signs)}", True, RED)
             self.screen.blit(debug_text, (10, 90))
 
             self.player.draw(self.screen)
