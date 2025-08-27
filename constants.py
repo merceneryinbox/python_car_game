@@ -33,7 +33,7 @@ LEVEL_INCREMENT = 5
 
 # Power-up durations
 SHIELD_DURATION = 10  # seconds
-GUN_DURATION =7      # seconds
+GUN_DURATION = 3      # seconds
 
 # Colors
 SAND_COLOR = (194, 178, 128)

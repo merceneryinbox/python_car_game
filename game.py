@@ -48,7 +48,7 @@ class Game:
         self.road_texture.fill((50, 50, 50))  # Темно-серый цвет дороги
 
         # Переменные для анимации дороги
-        self.road_offset = 2  # Смещение для анимации дороги
+        self.road_offset = 0  # Смещение для анимации дороги
         self.road_speed = 3  # Скорость движения дороги
 
         # === ВСТАВЬТЕ ЭТОТ БЛОК ЗДЕСЬ ===
@@ -156,16 +156,30 @@ class Game:
             pygame.draw.circle(self.skeleton_head_image, (0, 0, 0), (30, 20), 3)  # Глаз
             pygame.draw.rect(self.skeleton_head_image, (0, 0, 0), (20, 30, 10, 5))  # Рот
 
-        # Загрузите изображение джипа
+        # Загрузите изображение джипа для игрока
         try:
-            self.jeep_image = pygame.image.load('assets/images/jeep_2.PNG').convert_alpha()
+            self.jeep_image = pygame.image.load('assets/images/jeep_2.png').convert_alpha()
             self.jeep_image = pygame.transform.scale(self.jeep_image, (self.player.width, self.player.height))
-            print("Изображение джипа загружено успешно")
+            print("Изображение джипа для игрока загружено успешно")
         except:
-            print("Ошибка загрузки изображения джипа. Создаем заглушку")
+            print("Ошибка загрузки изображения джипа для игрока. Создаем заглушку")
             self.jeep_image = pygame.Surface((self.player.width, self.player.height))
             self.jeep_image.fill((0, 100, 0))  # Темно-зеленый цвет
             pygame.draw.rect(self.jeep_image, (139, 69, 19), (5, 5, self.player.width - 10, self.player.height - 10))
+
+        # Загрузите изображение для бонуса джипа
+        try:
+            self.jeep_bonus_image = pygame.image.load('assets/images/jeep_3.png').convert_alpha()
+            self.jeep_bonus_image = pygame.transform.scale(self.jeep_bonus_image, (50, 50))
+            print("Изображение бонуса джипа загружено успешно")
+            # Устанавливаем изображение для бонуса
+            self.jeep_bonus.image = self.jeep_bonus_image
+        except:
+            print("Ошибка загрузки изображения бонуса джипа. Создаем заглушку")
+            self.jeep_bonus_image = pygame.Surface((50, 50))
+            self.jeep_bonus_image.fill((0, 100, 0))  # Темно-зеленый цвет
+            pygame.draw.rect(self.jeep_bonus_image, (139, 69, 19), (5, 5, 40, 40))
+            self.jeep_bonus.image = self.jeep_bonus_image
 
     def activate_jeep(self):
         """Активировать бонус джипа"""
@@ -460,10 +474,13 @@ class Game:
                 self.player.speed = 2.5  # Нормальная скорость
                 del self.off_road_slowdown
 
-        # Check if gun active and enemy is on same line
-        if self.player.gun_active and abs(self.player.y - self.enemy.y) < 10:
-            self.enemies_defeated += 1
-            self.enemy.reset()
+        # Check if gun active and enemy is on screen (не только на той же линии)
+        if self.player.gun_active:
+            # Проверяем всех врагов на экране, а не только на той же линии
+            if not self.enemy.is_off_screen():  # Если враг на экране
+                self.enemies_defeated += 1
+                self.enemy.reset()
+                print("Уничтожен враг с помощью оружия!")
 
         # Check if enemy is off screen
         if self.enemy.is_off_screen():
@@ -501,7 +518,7 @@ class Game:
             # Рисуем пустыню по всей площади
             self.screen.blit(self.desert_texture, (0, 0))
 
-            # Рисуем дорогу посередине с анимацией
+            # Рисуем дорогу посередине с анимации
             road_x = (SCREEN_WIDTH - ROAD_WIDTH) // 2
 
             # Создаем временную поверхность для анимированной дороги
