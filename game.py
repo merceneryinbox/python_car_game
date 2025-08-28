@@ -86,6 +86,11 @@ class Game:
         self.shield_bonus = Bonus("shield")
         self.gun_bonus = Bonus("gun")
 
+        # Добавьте после загрузки других изображений
+        self.gun_rays = []  # Список для хранения информации о лучах
+        self.gun_ray_duration = 3000  # Длительность показа лучей в миллисекундах
+        self.gun_ray_start_time = 0  # Время активации лучей
+
         # Initially hide special bonuses
         self.shield_bonus.y = -BONUS_HEIGHT
         self.gun_bonus.y = -BONUS_HEIGHT
@@ -197,6 +202,24 @@ class Game:
         # Восстанавливаем оригинальное изображение
         if self.original_player_image is not None:
             self.player.image = self.original_player_image
+
+    def create_gun_rays(self):
+        """Создать 4 красных луча на дороге"""
+        self.gun_rays = []  # Очищаем предыдущие лучи
+        road_left = (SCREEN_WIDTH - ROAD_WIDTH) // 2
+        road_right = road_left + ROAD_WIDTH
+
+        # Создаем 4 луча равномерно распределенных по ширине дороги
+        for i in range(4):
+            x_pos = road_left + (i + 1) * (ROAD_WIDTH // 5)
+            self.gun_rays.append({
+                'x': x_pos,
+                'width': 8,  # Толщина луча
+                'height': SCREEN_HEIGHT,
+                'color': RED
+            })
+
+        self.gun_ray_start_time = pygame.time.get_ticks()
 
     def load_sounds(self):
         """Load all game sounds"""
@@ -343,6 +366,8 @@ class Game:
             self.player.activate_gun()
             self.gun_bonus.reset()
             self.gun_bonus.y = -BONUS_HEIGHT
+            self.create_gun_rays()  # ← Добавьте эту строку
+            print("Бонус gun подобран, создаем лучи")  # Отладочный вывод
 
         # Player with jeep bonus
         if self.jeep_bonus.collides_with(self.player):
@@ -407,6 +432,16 @@ class Game:
 
         # Update power-ups
         self.player.update_powerups()
+
+        # Проверяем время действия лучей оружия
+        if self.gun_rays:
+            current_time = pygame.time.get_ticks()
+            if current_time - self.gun_ray_start_time > self.gun_ray_duration:
+                self.gun_rays = []  # Убираем лучи после истечения времени
+                print("Лучи оружия скрыты")
+            else:
+                print("Лучи активны, осталось времени:",
+                      self.gun_ray_duration - (current_time - self.gun_ray_start_time))
 
         # Move enemy
         self.enemy.move()
@@ -474,14 +509,14 @@ class Game:
                 self.player.speed = 2.5  # Нормальная скорость
                 del self.off_road_slowdown
 
-        # Check if gun active and enemy is on screen (не только на той же линии)
+        # Check if gun active and enemy is visible on screen
         if self.player.gun_active:
-            # Проверяем всех врагов на экране, а не только на той же линии
-            if not self.enemy.is_off_screen():  # Если враг на экране
+            # Проверяем, находится ли враг в видимой области экрана
+            if (self.enemy.y > 0 and self.enemy.y < SCREEN_HEIGHT and
+                    self.enemy.x > 0 and self.enemy.x < SCREEN_WIDTH):
                 self.enemies_defeated += 1
                 self.enemy.reset()
-                print("Уничтожен враг с помощью оружия!")
-
+                print("Уничтожен видимый враг с помощью оружия!")
         # Check if enemy is off screen
         if self.enemy.is_off_screen():
             self.enemy.reset()
@@ -537,6 +572,13 @@ class Game:
                                      (ROAD_WIDTH // 2 - 5, mark_y, 10, 30))
 
             self.screen.blit(animated_road, (road_x, 0))
+
+            # Найдите блок отрисовки и добавьте после рисования дороги но до рисования бонусов:
+            # Рисуем лучи оружия если они активны
+            if self.gun_rays:
+                for ray in self.gun_rays:
+                    pygame.draw.rect(self.screen, ray['color'],
+                                     (ray['x'], 0, ray['width'], ray['height']))
 
             # Рисуем таблички со скелетом - только голову
             for sign in self.skeleton_signs:
