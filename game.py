@@ -51,6 +51,24 @@ class Game:
         self.road_offset = 0  # Смещение для анимации дороги
         self.road_speed = 3  # Скорость движения дороги
 
+        # Добавьте после других переменных
+        self.turrets = []  # Список для хранения турелей
+        self.turret_duration = 5000  # Длительность турелей в миллисекундах
+        self.turret_start_time = 0  # Время активации турелей
+        self.turret_image = None  # Изображение турели
+
+        # Загрузите изображение турели
+        try:
+            self.turret_image = pygame.image.load('assets/images/turret.png').convert_alpha()
+            self.turret_image = pygame.transform.scale(self.turret_image, (40, 40))
+            print("Изображение турели загружено успешно")
+        except:
+            print("Ошибка загрузки изображения турели. Создаем заглушку")
+            self.turret_image = pygame.Surface((40, 40))
+            self.turret_image.fill((200, 0, 0))  # Красный цвет
+            pygame.draw.circle(self.turret_image, (100, 100, 100), (20, 20), 15)  # Основание
+            pygame.draw.rect(self.turret_image, (150, 150, 150), (15, 5, 10, 15))  # Ствол
+
         # === ВСТАВЬТЕ ЭТОТ БЛОК ЗДЕСЬ ===
         # Добавляем красные линии по краям дороги
         pygame.draw.rect(self.road_texture, RED, (0, 0, 5, SCREEN_HEIGHT))  # Левая красная линия
@@ -204,23 +222,43 @@ class Game:
             self.player.image = self.original_player_image
 
     def create_gun_rays(self):
-        """Создать 4 красных луча на дороге"""
+        """Создать 4 красных луча на дороге, начинающиеся от турелей"""
         self.gun_rays = []  # Очищаем предыдущие лучи
         road_left = (SCREEN_WIDTH - ROAD_WIDTH) // 2
-        road_right = road_left + ROAD_WIDTH
+        turret_y = SCREEN_HEIGHT - 100  # Высота турелей
 
-        # Создаем 4 луча равномерно распределенных по ширине дороги
+        # Создаем 4 луча, начинающиеся от турелей и идущие ВВЕРХ
         for i in range(4):
             x_pos = road_left + (i + 1) * (ROAD_WIDTH // 5)
             self.gun_rays.append({
-                'x': x_pos,
-                'width': 8,  # Толщина луча
-                'height': SCREEN_HEIGHT,
+                'x': x_pos,  # Сдвигаем на 30px правее для турелей
+                'y': 0,  # Начинаются от верха экрана
+                'width': 12,  # Толщина луча
+                'height': turret_y + 40,  # Высота от верха до турелей + немного ниже
                 'color': RED
             })
 
         self.gun_ray_start_time = pygame.time.get_ticks()
+        print("Лучи оружия созданы! Количество лучей:", len(self.gun_rays))
+    def create_turrets(self):
+        """Создать турели перед игроком, правее лучей"""
+        self.turrets = []  # Очищаем предыдущие турели
+        road_left = (SCREEN_WIDTH - ROAD_WIDTH) // 2
+        turret_y = SCREEN_HEIGHT - 100  # Высота турелей
 
+        # Создаем 4 турели правее лучей
+        for i in range(4):  # 4 турели для 4 лучей
+            x_pos = road_left + (i + 1) * (ROAD_WIDTH // 5) - 15
+            self.turrets.append({
+                'x': x_pos,
+                'y': turret_y,
+                'width': 40,
+                'height': 40,
+                'image': self.turret_image
+            })
+
+        self.turret_start_time = pygame.time.get_ticks()
+        print("Турели созданы! Количество:", len(self.turrets))
     def load_sounds(self):
         """Load all game sounds"""
 
@@ -325,6 +363,7 @@ class Game:
         self.deactivate_jeep()
 
         self.skeleton_signs = []  # Очищаем таблички при ресете
+        self.turrets = []  # ← ДОБАВЬТЕ ЭТУ СТРОКУ (очищаем турели)
 
     def handle_events(self):
         """Handle pygame events"""
@@ -367,6 +406,7 @@ class Game:
             self.gun_bonus.reset()
             self.gun_bonus.y = -BONUS_HEIGHT
             self.create_gun_rays()  # ← Добавьте эту строку
+            self.create_turrets()  # Турели ← ДОБАВЬТЕ ЭТУ СТРОКУ
             print("Бонус gun подобран, создаем лучи")  # Отладочный вывод
 
         # Player with jeep bonus
@@ -439,9 +479,13 @@ class Game:
             if current_time - self.gun_ray_start_time > self.gun_ray_duration:
                 self.gun_rays = []  # Убираем лучи после истечения времени
                 print("Лучи оружия скрыты")
-            else:
-                print("Лучи активны, осталось времени:",
-                      self.gun_ray_duration - (current_time - self.gun_ray_start_time))
+
+        # Проверяем время действия турелей (ПЕРЕМЕСТИТЕ ЭТОТ БЛОК СЮДА)
+        if self.turrets:
+            current_time = pygame.time.get_ticks()
+            if current_time - self.turret_start_time > self.turret_duration:
+                self.turrets = []  # Убираем турели после истечения времени
+                print("Турели деактивированы")
 
         # Move enemy
         self.enemy.move()
@@ -511,12 +555,16 @@ class Game:
 
         # Check if gun active and enemy is visible on screen
         if self.player.gun_active:
-            # Проверяем, находится ли враг в видимой области экрана
+            # Проверяем, находится ли враг в видимой области экрана И на дороге
+            road_left = (SCREEN_WIDTH - ROAD_WIDTH) // 2
+            road_right = road_left + ROAD_WIDTH
+
             if (self.enemy.y > 0 and self.enemy.y < SCREEN_HEIGHT and
-                    self.enemy.x > 0 and self.enemy.x < SCREEN_WIDTH):
+                    self.enemy.x + self.enemy.width > road_left and self.enemy.x < road_right):
                 self.enemies_defeated += 1
                 self.enemy.reset()
-                print("Уничтожен видимый враг с помощью оружия!")
+                print("Уничтожен видимый враг на дороге с помощью оружия!")
+
         # Check if enemy is off screen
         if self.enemy.is_off_screen():
             self.enemy.reset()
@@ -573,12 +621,16 @@ class Game:
 
             self.screen.blit(animated_road, (road_x, 0))
 
-            # Найдите блок отрисовки и добавьте после рисования дороги но до рисования бонусов:
             # Рисуем лучи оружия если они активны
             if self.gun_rays:
                 for ray in self.gun_rays:
                     pygame.draw.rect(self.screen, ray['color'],
-                                     (ray['x'], 0, ray['width'], ray['height']))
+                                     (ray['x'], ray['y'], ray['width'], ray['height']))
+
+            # Рисуем турели если они активны (ОДИН раз!)
+            if self.turrets:
+                for turret in self.turrets:
+                    self.screen.blit(turret['image'], (turret['x'], turret['y']))
 
             # Рисуем таблички со скелетом - только голову
             for sign in self.skeleton_signs:
@@ -602,7 +654,6 @@ class Game:
             self.screen.blit(defeated_text, (10, 50))
 
         pygame.display.flip()
-
     def run(self):
         """Main game loop"""
         running = True
