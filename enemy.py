@@ -5,6 +5,8 @@ from constants import *
 
 class Enemy:
     def __init__(self):
+        self.width = 50  # Стандартная ширина
+        self.height = 80  # Стандартная высота
         self.width = ENEMY_WIDTH
         self.height = ENEMY_HEIGHT
         self.x = random.randint(0, SCREEN_WIDTH - self.width)

@@ -4,8 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0ef8d840-4cab-4ea5-83d9-283d1225862d" name="Changes" comment="добавил анимацию бонуса gun и теперь бонус gun убивает только тех врагов которые видны">
+    <list default="true" id="0ef8d840-4cab-4ea5-83d9-283d1225862d" name="Changes" comment="добавил к лазеру турели,теперь бонус Gun убивает только на дороге">
+      <change afterPath="$PROJECT_DIR$/assets/images/jeep_enemy.PNG" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/constants.py" beforeDir="false" afterPath="$PROJECT_DIR$/constants.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/enemy.py" beforeDir="false" afterPath="$PROJECT_DIR$/enemy.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/game.py" beforeDir="false" afterPath="$PROJECT_DIR$/game.py" afterDir="false" />
     </list>
     <list id="92136aab-7a5f-4d89-9b71-2a8eeb4acfc6" name="bonus_cherry_pick" comment="bonus_cherry_pick" />
@@ -236,7 +239,15 @@
       <option name="project" value="LOCAL" />
       <updated>1756397275663</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="добавил к лазеру турели,теперь бонус Gun убивает только на дороге">
+      <option name="closed" value="true" />
+      <created>1756494217284</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1756494217284</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -295,7 +306,8 @@
     <MESSAGE value="добавил бонус &quot;Jeep&quot;" />
     <MESSAGE value="усовершенствовал лазер добавил картинку к бонусу &quot;jeep&quot;" />
     <MESSAGE value="добавил анимацию бонуса gun и теперь бонус gun убивает только тех врагов которые видны" />
-    <option name="LAST_COMMIT_MESSAGE" value="добавил анимацию бонуса gun и теперь бонус gun убивает только тех врагов которые видны" />
+    <MESSAGE value="добавил к лазеру турели,теперь бонус Gun убивает только на дороге" />
+    <option name="LAST_COMMIT_MESSAGE" value="добавил к лазеру турели,теперь бонус Gun убивает только на дороге" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/python_car_game$main.coverage" NAME="main Coverage Results" MODIFIED="1756054758870" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />

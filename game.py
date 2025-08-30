@@ -104,6 +104,22 @@ class Game:
         self.shield_bonus = Bonus("shield")
         self.gun_bonus = Bonus("gun")
 
+        # Загружаем изображение джипа-врага
+        try:
+            self.jeep_enemy_image = pygame.image.load('assets/images/jeep_enemy.png').convert_alpha()
+            self.jeep_enemy_image = pygame.transform.scale(self.jeep_enemy_image,
+                                                           (self.enemy.width, self.enemy.height))
+            print("Изображение джипа-врага загружено успешно")
+        except:
+            print("Ошибка загрузки изображения джипа-врага. Создаем заглушку")
+            self.jeep_enemy_image = pygame.Surface((self.enemy.width, self.enemy.height))
+            self.jeep_enemy_image.fill((255, 0, 0))  # Красный цвет для вражеского джипа
+            pygame.draw.rect(self.jeep_enemy_image, (100, 0, 0),
+                             (5, 5, self.enemy.width - 10, self.enemy.height - 10))
+
+        # Сохраняем оригинальное изображение врага
+        self.original_enemy_image = self.enemy.image.copy()
+
         # Добавьте после загрузки других изображений
         self.gun_rays = []  # Список для хранения информации о лучах
         self.gun_ray_duration = 3000  # Длительность показа лучей в миллисекундах
@@ -351,9 +367,20 @@ class Game:
         """Reset positions of all game objects"""
         self.player.reset()
         self.enemy.reset()
+        # Восстанавливаем обычное изображение врага
+        self.enemy.image = self.original_enemy_image.copy()
         self.regular_bonus.reset()
         self.shield_bonus.reset()
         self.gun_bonus.reset()
+        # Сбрасываем размеры к оригинальным
+        if hasattr(self.enemy, 'original_width'):
+            self.enemy.width = self.enemy.original_width
+            self.enemy.height = self.enemy.original_height
+        else:
+            # Если атрибуты еще не созданы, устанавливаем стандартные размеры
+            self.enemy.width = 50  # Стандартная ширина врага
+            self.enemy.height = 80  # Стандартная высота врага
+
         # Hide special bonuses initially
         self.shield_bonus.y = -BONUS_HEIGHT
         self.gun_bonus.y = -BONUS_HEIGHT
@@ -490,6 +517,26 @@ class Game:
         # Move enemy
         self.enemy.move()
 
+        # Проверяем, находится ли враг на дороге или вне ее
+        road_left = (SCREEN_WIDTH - ROAD_WIDTH) // 2
+        road_right = road_left + ROAD_WIDTH
+
+        # Если враг вне дороги - меняем на джип
+        if (self.enemy.x < road_left or self.enemy.x + self.enemy.width > road_right):
+            if self.enemy.image != self.jeep_enemy_image:
+                self.enemy.image = self.jeep_enemy_image
+                # Сохраняем оригинальные размеры перед изменением
+                if not hasattr(self.enemy, 'original_width'):
+                    self.enemy.original_width = self.enemy.width
+                    self.enemy.original_height = self.enemy.height
+                # Устанавливаем размеры джипа (такие же как у изображения)
+                self.enemy.width = self.jeep_enemy_image.get_width()
+                self.enemy.height = self.jeep_enemy_image.get_height()
+        else:
+            # Если враг на дороге - возвращаем обычное изображение
+            if self.enemy.image != self.original_enemy_image:
+                self.enemy.image = self.original_enemy_image
+
         # Move bonuses with random chance
         if random.random() < BONUS_SPAWN_CHANCE:
             self.regular_bonus.move()
@@ -525,8 +572,9 @@ class Game:
         road_left = (SCREEN_WIDTH - ROAD_WIDTH) // 2
         road_right = road_left + ROAD_WIDTH
 
-        # Если игрок выехал за левую или правую границу дороги И у него не активен джип
-        if (self.player.x < road_left or self.player.x + self.player.width > road_right) and not self.jeep_active:
+        # Если игрок выехал за левую или правую границу дороги И у него не активен джип И не активен щит
+        if (
+                self.player.x < road_left or self.player.x + self.player.width > road_right) and not self.jeep_active and not self.player.shield_active:
             # Замедление
             if not hasattr(self, 'off_road_slowdown'):
                 self.off_road_slowdown = True
@@ -552,7 +600,6 @@ class Game:
             if hasattr(self, 'off_road_slowdown'):
                 self.player.speed = 2.5  # Нормальная скорость
                 del self.off_road_slowdown
-
         # Check if gun active and enemy is visible on screen
         if self.player.gun_active:
             # Проверяем, находится ли враг в видимой области экрана И на дороге
