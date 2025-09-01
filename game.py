@@ -10,7 +10,7 @@ from constants import (
     SCREEN_WIDTH, SCREEN_HEIGHT, WHITE, GREEN, RED, BONUS_HEIGHT, ENEMIES_FOR_FIRST_LEVEL, LEVEL_INCREMENT,
     MAX_ENEMY_SPEED, PLAYER_LIVES, MAX_LEVELS, FPS,
     BONUS_SPAWN_CHANCE, SHIELD_SPAWN_CHANCE, GUN_SPAWN_CHANCE, JEEP_SPAWN_CHANCE, JEEP_DURATION,
-    ROAD_WIDTH
+    ROAD_WIDTH, BULLET_SPEED, MACHINE_GUN_DURATION, MACHINE_GUN_SPAWN_CHANCE
 )
 from enemy import Enemy
 from player import Player
@@ -103,6 +103,7 @@ class Game:
         self.regular_bonus = Bonus("regular")
         self.shield_bonus = Bonus("shield")
         self.gun_bonus = Bonus("gun")
+        self.machine_gun_bonus = Bonus("machine_gun")
 
         # Загружаем изображение джипа-врага
         try:
@@ -138,6 +139,35 @@ class Game:
         self.jeep_time = 0
         self.original_player_image = None  # Для хранения оригинального изображения
         self.jeep_image = None  # Изображение джипа
+
+        # Загрузите изображение для бонуса machine_gun
+        try:
+            self.machine_gun_bonus_image = pygame.image.load('assets/images/machine_gun_bonus.png').convert_alpha()
+            self.machine_gun_bonus_image = pygame.transform.scale(self.machine_gun_bonus_image, (50, 50))
+            print("Изображение бонуса machine_gun загружено успешно")
+            # Устанавливаем изображение для бонуса
+            self.machine_gun_bonus.image = self.machine_gun_bonus_image
+        except:
+            print("Ошибка загрузки изображения бонуса machine_gun. Создаем заглушку")
+            self.machine_gun_bonus_image = pygame.Surface((50, 50))
+            self.machine_gun_bonus_image.fill((0, 0, 255))  # Синий цвет для machine_gun
+            pygame.draw.rect(self.machine_gun_bonus_image, (0, 0, 200), (5, 5, 40, 40))
+            # Рисуем простой пулемет
+            pygame.draw.rect(self.machine_gun_bonus_image, (100, 100, 100), (15, 10, 20, 30))  # Основание
+            pygame.draw.rect(self.machine_gun_bonus_image, (150, 150, 150), (10, 15, 30, 5))  # Ствол
+            self.machine_gun_bonus.image = self.machine_gun_bonus_image
+
+        # После создания других бонусов
+        self.machine_gun_bonus = Bonus("machine_gun")
+
+        # После инициализации других бонусов
+        self.machine_gun_bonus.y = -BONUS_HEIGHT
+
+        # Добавьте для machine_gun
+        self.bullets = []  # Список для хранения пуль
+        self.machine_gun_active = False
+        self.machine_gun_time = 0
+        self.last_bullet_time = 0  # Время последнего выстрела
 
         # Таблички со скелетом
         self.skeleton_signs = []
@@ -237,6 +267,28 @@ class Game:
         if self.original_player_image is not None:
             self.player.image = self.original_player_image
 
+    def activate_machine_gun(self):
+        """Активировать бонус пулемета"""
+        self.machine_gun_active = True
+        self.machine_gun_time = pygame.time.get_ticks()
+        self.last_bullet_time = pygame.time.get_ticks()
+
+    def deactivate_machine_gun(self):
+        """Деактивировать бонус пулемета"""
+        self.machine_gun_active = False
+        self.bullets = []  # Очищаем все пули
+
+    def create_bullet(self):
+        """Создать пулю из центра игрока"""
+        bullet = {
+            'x': self.player.x + self.player.width // 2 - 5,  # Центр игрока
+            'y': self.player.y,
+            'width': 10,
+            'height': 20,
+            'speed': BULLET_SPEED
+        }
+        self.bullets.append(bullet)
+
     def create_gun_rays(self):
         """Создать 4 красных луча на дороге, начинающиеся от турелей"""
         self.gun_rays = []  # Очищаем предыдущие лучи
@@ -256,6 +308,7 @@ class Game:
 
         self.gun_ray_start_time = pygame.time.get_ticks()
         print("Лучи оружия созданы! Количество лучей:", len(self.gun_rays))
+
     def create_turrets(self):
         """Создать турели перед игроком, правее лучей"""
         self.turrets = []  # Очищаем предыдущие турели
@@ -275,6 +328,7 @@ class Game:
 
         self.turret_start_time = pygame.time.get_ticks()
         print("Турели созданы! Количество:", len(self.turrets))
+
     def load_sounds(self):
         """Load all game sounds"""
 
@@ -372,6 +426,7 @@ class Game:
         self.regular_bonus.reset()
         self.shield_bonus.reset()
         self.gun_bonus.reset()
+        self.machine_gun_bonus.reset()
         # Сбрасываем размеры к оригинальным
         if hasattr(self.enemy, 'original_width'):
             self.enemy.width = self.enemy.original_width
@@ -384,13 +439,16 @@ class Game:
         # Hide special bonuses initially
         self.shield_bonus.y = -BONUS_HEIGHT
         self.gun_bonus.y = -BONUS_HEIGHT
+        self.machine_gun_bonus.y = -BONUS_HEIGHT
 
         self.jeep_bonus.reset()
         self.jeep_bonus.y = -BONUS_HEIGHT
         self.deactivate_jeep()
 
         self.skeleton_signs = []  # Очищаем таблички при ресете
-        self.turrets = []  # ← ДОБАВЬТЕ ЭТУ СТРОКУ (очищаем турели)
+        self.turrets = []  # очищаем турели
+        self.bullets = []  # Очищаем пули
+        self.gun_rays = []  # Очищаем лучи
 
     def handle_events(self):
         """Handle pygame events"""
@@ -441,6 +499,13 @@ class Game:
             self.activate_jeep()
             self.jeep_bonus.reset()
             self.jeep_bonus.y = -BONUS_HEIGHT
+
+        # Player with machine_gun bonus
+        if self.machine_gun_bonus.collides_with(self.player):
+            self.activate_machine_gun()
+            self.machine_gun_bonus.reset()
+            self.machine_gun_bonus.y = -BONUS_HEIGHT
+            print("Бонус machine_gun подобран!")
 
     def check_skeleton_collisions(self):
         """Проверить столкновения с табличками со скелетом"""
@@ -507,7 +572,7 @@ class Game:
                 self.gun_rays = []  # Убираем лучи после истечения времени
                 print("Лучи оружия скрыты")
 
-        # Проверяем время действия турелей (ПЕРЕМЕСТИТЕ ЭТОТ БЛОК СЮДА)
+        # Проверяем время действия турелей
         if self.turrets:
             current_time = pygame.time.get_ticks()
             if current_time - self.turret_start_time > self.turret_duration:
@@ -516,6 +581,36 @@ class Game:
 
         # Move enemy
         self.enemy.move()
+
+        # Проверяем время действия machine_gun
+        current_time = pygame.time.get_ticks()
+        if self.machine_gun_active and current_time - self.machine_gun_time > MACHINE_GUN_DURATION:
+            self.deactivate_machine_gun()
+            print("Пулемет деактивирован")
+
+        # Стрельба из пулемета (каждую секунду)
+        if self.machine_gun_active and current_time - self.last_bullet_time > 1000:  # 1 секунда
+            self.create_bullet()
+            self.last_bullet_time = current_time
+
+        # Движение пуль и проверка столкновений
+        for bullet in self.bullets[:]:
+            bullet['y'] -= bullet['speed']  # Двигаем пулю вверх
+
+            # Проверяем столкновение пули с врагом
+            if (bullet['x'] < self.enemy.x + self.enemy.width and
+                    bullet['x'] + bullet['width'] > self.enemy.x and
+                    bullet['y'] < self.enemy.y + self.enemy.height and
+                    bullet['y'] + bullet['height'] > self.enemy.y):
+                self.enemies_defeated += 1
+                self.enemy.reset()
+                self.bullets.remove(bullet)
+                print("Враг уничтожен пулей!")
+                continue
+
+            # Удаляем пули, которые улетели за экран
+            if bullet['y'] + bullet['height'] < 0:
+                self.bullets.remove(bullet)
 
         # Проверяем, находится ли враг на дороге или вне ее
         road_left = (SCREEN_WIDTH - ROAD_WIDTH) // 2
@@ -546,6 +641,8 @@ class Game:
             self.gun_bonus.move()
         if random.random() < JEEP_SPAWN_CHANCE:
             self.jeep_bonus.move()
+        if random.random() < MACHINE_GUN_SPAWN_CHANCE:
+            self.machine_gun_bonus.move()
 
         # Добавьте проверку времени действия джипа
         current_time = pygame.time.get_ticks()
@@ -573,8 +670,8 @@ class Game:
         road_right = road_left + ROAD_WIDTH
 
         # Если игрок выехал за левую или правую границу дороги И у него не активен джип И не активен щит
-        if (
-                self.player.x < road_left or self.player.x + self.player.width > road_right) and not self.jeep_active and not self.player.shield_active:
+        if ((self.player.x < road_left or self.player.x + self.player.width > road_right) and
+            not self.jeep_active and not self.player.shield_active):
             # Замедление
             if not hasattr(self, 'off_road_slowdown'):
                 self.off_road_slowdown = True
@@ -600,6 +697,7 @@ class Game:
             if hasattr(self, 'off_road_slowdown'):
                 self.player.speed = 2.5  # Нормальная скорость
                 del self.off_road_slowdown
+
         # Check if gun active and enemy is visible on screen
         if self.player.gun_active:
             # Проверяем, находится ли враг в видимой области экрана И на дороге
@@ -626,14 +724,13 @@ class Game:
         if self.regular_bonus.is_off_screen():
             self.regular_bonus.reset()
         if self.shield_bonus.is_off_screen():
-            self.shield_bonus.reset()
             self.shield_bonus.y = -BONUS_HEIGHT
         if self.gun_bonus.is_off_screen():
-            self.gun_bonus.reset()
             self.gun_bonus.y = -BONUS_HEIGHT
         if self.jeep_bonus.is_off_screen():
-            self.jeep_bonus.reset()
             self.jeep_bonus.y = -BONUS_HEIGHT
+        if self.machine_gun_bonus.is_off_screen():
+            self.machine_gun_bonus.y = -BONUS_HEIGHT
 
         # Check collisions
         self.check_collisions()
@@ -689,6 +786,12 @@ class Game:
             self.shield_bonus.draw(self.screen)
             self.gun_bonus.draw(self.screen)
             self.jeep_bonus.draw(self.screen)
+            self.machine_gun_bonus.draw(self.screen)
+
+            # Рисуем пули
+            for bullet in self.bullets:
+                pygame.draw.rect(self.screen, (255, 0, 0),  # Красные пули
+                                 (bullet['x'], bullet['y'], bullet['width'], bullet['height']))
 
             # Рисуем игрока и врага
             self.player.draw(self.screen)
@@ -701,6 +804,7 @@ class Game:
             self.screen.blit(defeated_text, (10, 50))
 
         pygame.display.flip()
+
     def run(self):
         """Main game loop"""
         running = True

@@ -26,6 +26,11 @@ BONUS_SPAWN_CHANCE = 0.4
 SHIELD_SPAWN_CHANCE = 0.5
 GUN_SPAWN_CHANCE = 0.3
 
+# Bullet settings
+BULLET_SPEED = 10  # Скорость пули
+MACHINE_GUN_DURATION = 10000  # Длительность пулемета в миллисекундах (10 секунд)
+MACHINE_GUN_SPAWN_CHANCE = 0.5  # Шанс появления бонуса пулемета
+
 # Level settings
 MAX_LEVELS = 10
 ENEMIES_FOR_FIRST_LEVEL = 35
