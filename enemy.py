@@ -27,7 +27,10 @@ class Enemy:
     def reset(self):
         """Reset enemy position"""
         self.x = random.randint(0, SCREEN_WIDTH - self.width)
-        self.y = 0 - self.height
+        # Уменьшаем начальную позицию (враги появляются чаще)
+        self.y = random.randint(-200, -100)  # Было random.randint(-300, -150)
+        # Увеличиваем скорость при респавне
+        self.speed = min(self.speed + 0.05, MAX_ENEMY_SPEED)
 
     def is_off_screen(self):
         """Check if enemy is off screen"""

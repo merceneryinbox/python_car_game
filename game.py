@@ -267,6 +267,37 @@ class Game:
         if self.original_player_image is not None:
             self.player.image = self.original_player_image
 
+    def create_random_bonus_from_enemy(self, enemy_x, enemy_y):
+        """Создать случайный бонус на месте врага"""
+        bonus_types = ["regular", "shield", "gun", "jeep", "machine_gun"]
+        probabilities = [0.5, 0.2, 0.15, 0.1, 0.05]  # Вероятности для каждого бонуса
+
+        # Выбираем случайный бонус по вероятности
+        bonus_type = random.choices(bonus_types, weights=probabilities, k=1)[0]
+
+        # Создаем бонус на месте врага
+        if bonus_type == "regular":
+            self.regular_bonus.x = enemy_x
+            self.regular_bonus.y = enemy_y
+            self.regular_bonus.reset()
+        elif bonus_type == "shield":
+            self.shield_bonus.x = enemy_x
+            self.shield_bonus.y = enemy_y
+            self.shield_bonus.reset()
+        elif bonus_type == "gun":
+            self.gun_bonus.x = enemy_x
+            self.gun_bonus.y = enemy_y
+            self.gun_bonus.reset()
+        elif bonus_type == "jeep":
+            self.jeep_bonus.x = enemy_x
+            self.jeep_bonus.y = enemy_y
+            self.jeep_bonus.reset()
+        elif bonus_type == "machine_gun":
+            self.machine_gun_bonus.x = enemy_x
+            self.machine_gun_bonus.y = enemy_y
+            self.machine_gun_bonus.reset()
+
+        print(f"С врага выпал бонус: {bonus_type}!")
     def activate_machine_gun(self):
         """Активировать бонус пулемета"""
         self.machine_gun_active = True
@@ -412,7 +443,7 @@ class Game:
         self.enemies_defeated = 3
         self.current_level = level
         self.enemies_to_next_level = ENEMIES_FOR_FIRST_LEVEL + (level - 1) * LEVEL_INCREMENT
-        self.enemy.speed = min(0.7 + level, MAX_ENEMY_SPEED)
+        self.enemy.speed = min(1.0 + level, MAX_ENEMY_SPEED)
         pygame.mixer.music.stop()
         self.play_track_for_level(level)
         self.reset_positions()
@@ -427,6 +458,11 @@ class Game:
         self.shield_bonus.reset()
         self.gun_bonus.reset()
         self.machine_gun_bonus.reset()
+
+        # Сбрасываем ВСЕ состояния оружия
+        self.player.gun_active = False  # ← ДОБАВЬТЕ ЭТУ СТРОКУ
+        self.machine_gun_active = False  # ← ДОБАВЬТЕ ЭТУ СТРОКУ
+
         # Сбрасываем размеры к оригинальным
         if hasattr(self.enemy, 'original_width'):
             self.enemy.width = self.enemy.original_width
@@ -597,6 +633,40 @@ class Game:
         for bullet in self.bullets[:]:
             bullet['y'] -= bullet['speed']  # Двигаем пулю вверх
 
+            # С шансом 30% выпадает случайный бонус с врага
+            if random.random() < 0.3:
+                # Сохраняем позицию врага перед сбросом
+                enemy_x = self.enemy.x
+                enemy_y = self.enemy.y
+
+                # Выбираем случайный бонус
+                bonus_types = ["regular", "shield", "gun", "jeep", "machine_gun"]
+                probabilities = [0.5, 0.2, 0.15, 0.1, 0.05]  # Вероятности
+                bonus_type = random.choices(bonus_types, weights=probabilities, k=1)[0]
+
+                # Создаем бонус на месте врага
+                if bonus_type == "regular":
+                    self.regular_bonus.x = enemy_x
+                    self.regular_bonus.y = enemy_y
+                    self.regular_bonus.reset()
+                elif bonus_type == "shield":
+                    self.shield_bonus.x = enemy_x
+                    self.shield_bonus.y = enemy_y
+                    self.shield_bonus.reset()
+                elif bonus_type == "gun":
+                    self.gun_bonus.x = enemy_x
+                    self.gun_bonus.y = enemy_y
+                    self.gun_bonus.reset()
+                elif bonus_type == "jeep":
+                    self.jeep_bonus.x = enemy_x
+                    self.jeep_bonus.y = enemy_y
+                    self.jeep_bonus.reset()
+                elif bonus_type == "machine_gun":
+                    self.machine_gun_bonus.x = enemy_x
+                    self.machine_gun_bonus.y = enemy_y
+                    self.machine_gun_bonus.reset()
+
+                print(f"С врага выпал бонус: {bonus_type}!")
             # Проверяем столкновение пули с врагом
             if (bullet['x'] < self.enemy.x + self.enemy.width and
                     bullet['x'] + bullet['width'] > self.enemy.x and
@@ -699,8 +769,9 @@ class Game:
                 del self.off_road_slowdown
 
         # Check if gun active and enemy is visible on screen
-        if self.player.gun_active:
-            # Проверяем, находится ли враг в видимой области экрана И на дороге
+        # ИСПРАВЛЕНО: Разделяем логику обычного оружия и пулемета
+        if self.player.gun_active and not self.machine_gun_active:
+            # Обычное оружие - уничтожает всех видимых врагов на дороге
             road_left = (SCREEN_WIDTH - ROAD_WIDTH) // 2
             road_right = road_left + ROAD_WIDTH
 
@@ -710,11 +781,36 @@ class Game:
                 self.enemy.reset()
                 print("Уничтожен видимый враг на дороге с помощью оружия!")
 
-        # Check if enemy is off screen
+        elif self.machine_gun_active:
+            # Пулемет - работает только через пули, не уничтожает автоматически всех врагов
+            pass  # Логика пулемета обрабатывается в отдельном блоке с пулями
+
+        # Check if enemy is off screen - УВЕЛИЧИВАЕМ ЧАСТОТУ СПАВНА ВРАГОВ
         if self.enemy.is_off_screen():
             self.enemy.reset()
+
+            # Увеличиваем скорость врага с каждым новым врагом
+            self.enemy.speed = min(self.enemy.speed + 0.1, MAX_ENEMY_SPEED)
+
             if not self.player.gun_active:
                 self.enemies_defeated += 1
+
+            # На высоких уровнях враги появляются чаще
+            if self.current_level > 2:
+                # Уменьшаем время до следующего врага
+                self.enemy.y = random.randint(-150, -80)  # Ближе к экрану
+
+            # На очень высоких уровнях иногда появляется сразу два врага
+            if self.current_level > 5 and random.random() < 0.2:
+                # Немедленно создать еще одного врага
+                self.enemy.reset()
+                self.enemy.y = random.randint(-100, -50)
+
+            if self.enemies_defeated >= self.enemies_to_next_level:
+                self.game_state = "level_select"
+                pygame.mixer.music.stop()
+                self.play_menu_music()
+
             if self.enemies_defeated >= self.enemies_to_next_level:
                 self.game_state = "level_select"
                 pygame.mixer.music.stop()
