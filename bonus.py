@@ -3,7 +3,6 @@ import random
 import os
 from constants import SCREEN_WIDTH, SCREEN_HEIGHT, BONUS_WIDTH, BONUS_HEIGHT
 
-
 class Bonus:
     def __init__(self, bonus_type):
         self.type = bonus_type
