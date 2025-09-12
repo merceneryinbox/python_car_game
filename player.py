@@ -40,6 +40,11 @@ class Player:
         self.gun_active = True
         self.gun_start_time = pygame.time.get_ticks() / 1000
 
+    def activate_machine_gun(self):
+        """Активировать бонус пулемета"""
+        self.machine_gun_active = True
+        self.machine_gun_time = pygame.time.get_ticks()
+
     def update_powerups(self):
         """Check and deactivate expired power-ups"""
         current_time = pygame.time.get_ticks() / 1000
