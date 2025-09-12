@@ -103,7 +103,9 @@ class Game:
         self.regular_bonus = Bonus("regular")
         self.shield_bonus = Bonus("shield")
         self.gun_bonus = Bonus("gun")
-        self.machine_gun_bonus = Bonus("machine_gun")
+
+        # УБЕРИТЕ ЭТУ СТРОКУ - бонус создается дважды
+        # self.machine_gun_bonus = Bonus("machine_gun")
 
         # Загружаем изображение джипа-врага
         try:
@@ -142,26 +144,50 @@ class Game:
 
         # Загрузите изображение для бонуса machine_gun
         try:
-            self.machine_gun_bonus_image = pygame.image.load('assets/images/machine_gun_bonus.png').convert_alpha()
-            self.machine_gun_bonus_image = pygame.transform.scale(self.machine_gun_bonus_image, (50, 50))
-            print("Изображение бонуса machine_gun загружено успешно")
-            # Устанавливаем изображение для бонуса
-            self.machine_gun_bonus.image = self.machine_gun_bonus_image
-        except:
-            print("Ошибка загрузки изображения бонуса machine_gun. Создаем заглушку")
+            # Пробуем несколько возможных путей
+            possible_paths = [
+                'assets/images/machine_gun_bonus.png',
+                'assets/images/machine_gun.png',
+                'images/machine_gun_bonus.png',
+                'images/machine_gun.png'
+            ]
+
+            image_loaded = False
+            for path in possible_paths:
+                try:
+                    if os.path.exists(path):
+                        self.machine_gun_bonus_image = pygame.image.load(path).convert_alpha()
+                        self.machine_gun_bonus_image = pygame.transform.scale(self.machine_gun_bonus_image, (50, 50))
+                        print(f"Изображение бонуса machine_gun загружено из {path}")
+                        image_loaded = True
+                        break
+                except:
+                    continue
+
+            if not image_loaded:
+                raise Exception("Не удалось загрузить изображение machine_gun бонуса")
+
+        except Exception as e:
+            print(f"Ошибка загрузки изображения бонуса machine_gun: {e}. Создаем заглушку")
             self.machine_gun_bonus_image = pygame.Surface((50, 50))
             self.machine_gun_bonus_image.fill((0, 0, 255))  # Синий цвет для machine_gun
             pygame.draw.rect(self.machine_gun_bonus_image, (0, 0, 200), (5, 5, 40, 40))
             # Рисуем простой пулемет
             pygame.draw.rect(self.machine_gun_bonus_image, (100, 100, 100), (15, 10, 20, 30))  # Основание
             pygame.draw.rect(self.machine_gun_bonus_image, (150, 150, 150), (10, 15, 30, 5))  # Ствол
-            self.machine_gun_bonus.image = self.machine_gun_bonus_image
 
-        # После создания других бонусов
+        # После загрузки изображения создаем бонус machine_gun
         self.machine_gun_bonus = Bonus("machine_gun")
+        self.machine_gun_bonus.image = self.machine_gun_bonus_image  # Устанавливаем изображение
+        self.machine_gun_bonus.y = -BONUS_HEIGHT  # Скрываем initially
 
-        # После инициализации других бонусов
-        self.machine_gun_bonus.y = -BONUS_HEIGHT
+        # УДАЛИТЕ все последующие повторные создания machine_gun_bonus!
+        # Удалите эти строки полностью:
+        # pygame.draw.rect(self.machine_gun_bonus_image, (100, 100, 100), (15, 10, 20, 30))  # Основание
+        # pygame.draw.rect(self.machine_gun_bonus_image, (150, 150, 150), (10, 15, 30, 5))  # Ствол  # Скрываем initially
+        # pygame.draw.rect(self.machine_gun_bonus_image, (100, 100, 100), (15, 10, 20, 30))  # Основание
+        # pygame.draw.rect(self.machine_gun_bonus_image, (150, 150, 150), (10, 15, 30, 5))  # Ствол
+        # self.machine_gun_bonus.image = self.machine_gun_bonus_image
 
         # Добавьте для machine_gun
         self.bullets = []  # Список для хранения пуль
@@ -298,16 +324,6 @@ class Game:
             self.machine_gun_bonus.reset()
 
         print(f"С врага выпал бонус: {bonus_type}!")
-    def activate_machine_gun(self):
-        """Активировать бонус пулемета"""
-        self.machine_gun_active = True
-        self.machine_gun_time = pygame.time.get_ticks()
-        self.last_bullet_time = pygame.time.get_ticks()
-
-    def deactivate_machine_gun(self):
-        """Деактивировать бонус пулемета"""
-        self.machine_gun_active = False
-        self.bullets = []  # Очищаем все пули
 
     def create_bullet(self):
         """Создать пулю из центра игрока"""
@@ -459,9 +475,9 @@ class Game:
         self.gun_bonus.reset()
         self.machine_gun_bonus.reset()
 
-        # Сбрасываем ВСЕ состояния оружия
-        self.player.gun_active = False  # ← ДОБАВЬТЕ ЭТУ СТРОКУ
-        self.machine_gun_active = False  # ← ДОБАВЬТЕ ЭТУ СТРОКУ
+        # Сбрасываем ВСЕ состояния оружия через игрока
+        self.player.gun_active = False
+        self.player.machine_gun_active = False
 
         # Сбрасываем размеры к оригинальным
         if hasattr(self.enemy, 'original_width'):
@@ -526,10 +542,17 @@ class Game:
             self.player.activate_gun()
             self.gun_bonus.reset()
             self.gun_bonus.y = -BONUS_HEIGHT
-            self.create_gun_rays()  # ← Добавьте эту строку
-            self.create_turrets()  # Турели ← ДОБАВЬТЕ ЭТУ СТРОКУ
-            print("Бонус gun подобран, создаем лучи")  # Отладочный вывод
+            self.create_gun_rays()
+            self.create_turrets()
+            print("Бонус gun подобран, создаем лучи")
 
+        # Player with machine_gun bonus
+        if self.machine_gun_bonus.collides_with(self.player):
+            self.player.activate_machine_gun()  # ← Активируем через игрока
+            self.machine_gun_bonus.reset()
+            self.machine_gun_bonus.y = -BONUS_HEIGHT
+            print("Бонус machine_gun подобран!")
+            # НЕ создаем лучи и турели для machine_gun
         # Player with jeep bonus
         if self.jeep_bonus.collides_with(self.player):
             self.activate_jeep()
@@ -538,7 +561,7 @@ class Game:
 
         # Player with machine_gun bonus
         if self.machine_gun_bonus.collides_with(self.player):
-            self.activate_machine_gun()
+            self.player.activate_machine_gun()  # ← Теперь этот метод существует
             self.machine_gun_bonus.reset()
             self.machine_gun_bonus.y = -BONUS_HEIGHT
             print("Бонус machine_gun подобран!")
@@ -618,14 +641,15 @@ class Game:
         # Move enemy
         self.enemy.move()
 
-        # Проверяем время действия machine_gun
+        # Проверяем время действия machine_gun через игрока
         current_time = pygame.time.get_ticks()
-        if self.machine_gun_active and current_time - self.machine_gun_time > MACHINE_GUN_DURATION:
-            self.deactivate_machine_gun()
+        if self.player.machine_gun_active and current_time - self.player.machine_gun_time > MACHINE_GUN_DURATION:
+            self.player.machine_gun_active = False
+            self.bullets = []
             print("Пулемет деактивирован")
 
         # Стрельба из пулемета (каждую секунду)
-        if self.machine_gun_active and current_time - self.last_bullet_time > 1000:  # 1 секунда
+        if self.player.machine_gun_active and current_time - self.last_bullet_time > 1000:
             self.create_bullet()
             self.last_bullet_time = current_time
 
@@ -769,8 +793,8 @@ class Game:
                 del self.off_road_slowdown
 
         # Check if gun active and enemy is visible on screen
-        # ИСПРАВЛЕНО: Разделяем логику обычного оружия и пулемета
-        if self.player.gun_active and not self.machine_gun_active:
+        # РАЗДЕЛЕННАЯ ЛОГИКА: обычное оружие и пулемет работают отдельно
+        if self.player.gun_active and not self.player.machine_gun_active:
             # Обычное оружие - уничтожает всех видимых врагов на дороге
             road_left = (SCREEN_WIDTH - ROAD_WIDTH) // 2
             road_right = road_left + ROAD_WIDTH
@@ -779,12 +803,12 @@ class Game:
                     self.enemy.x + self.enemy.width > road_left and self.enemy.x < road_right):
                 self.enemies_defeated += 1
                 self.enemy.reset()
-                print("Уничтожен видимый враг на дороге с помощью оружия!")
+                print("Уничтожен видимый враг на дороге с помощью обычного оружия!")
 
-        elif self.machine_gun_active:
-            # Пулемет - работает только через пули, не уничтожает автоматически всех врагов
-            pass  # Логика пулемета обрабатывается в отдельном блоке с пулями
-
+        elif self.player.machine_gun_active:
+            # Пулемет - работает только через пули, не уничтожает автоматически
+            # Логика пуль обрабатывается в отдельном блоке
+            pass
         # Check if enemy is off screen - УВЕЛИЧИВАЕМ ЧАСТОТУ СПАВНА ВРАГОВ
         if self.enemy.is_off_screen():
             self.enemy.reset()

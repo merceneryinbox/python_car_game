@@ -38,6 +38,7 @@ LEVEL_INCREMENT = 10
 
 # Power-up durations
 SHIELD_DURATION = 7  # seconds
+MACHINE_GUN_DURATION = 10000  # 10 seconds for machine gun
 GUN_DURATION = 3      # seconds
 
 # Colors
